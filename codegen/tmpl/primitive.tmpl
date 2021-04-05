@@ -1,0 +1,8 @@
+
+
+func read{{.FieldName}}(x *{{.OwnerType}}) {{.ParquetType}} {
+	return {{.ParquetType}}(x.{{.FieldName}})
+}
+func write{{.FieldName}}(x *{{.OwnerType}}, vals []{{.ParquetType}}) {
+	x.{{.FieldName}} = {{.FieldType}}(vals[0])
+}

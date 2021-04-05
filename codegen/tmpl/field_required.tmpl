@@ -1,0 +1,106 @@
+
+type {{.UpperParquetType}}Field struct {
+	vals []{{.ParquetType}}
+	parquet.RequiredField
+	read  func({{.OwnerAlias}} *{{.OwnerType}}) {{.ParquetType}}
+	write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}})
+	stats *{{.ParquetType}}stats
+}
+
+func New{{.UpperParquetType}}Field(read func({{.OwnerAlias}} *{{.OwnerType}}) {{.ParquetType}}, write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}), path []string, opts ...func(*parquet.RequiredField)) *{{.UpperParquetType}}Field {
+	return &{{.UpperParquetType}}Field{
+		read:          read,
+		write:         write,
+		RequiredField: parquet.NewRequiredField(path, opts...),
+		stats:         new{{.UpperParquetType}}stats(),
+	}
+}
+
+func (f *{{.UpperParquetType}}Field) Schema() parquet.Field {
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: {{.UpperParquetType}}Type, RepetitionType: parquet.RepetitionRequired, Types: []int{0}}
+}
+
+func (f *{{.UpperParquetType}}Field) Read(r io.ReadSeeker, pg parquet.Page) error {
+	rr, _, err := f.DoRead(r, pg)
+	if err != nil {
+		return err
+	}
+
+	v := make([]{{.ParquetType}}, int(pg.N))
+	err = binary.Read(rr, binary.LittleEndian, &v)
+	f.vals = append(f.vals, v...)
+	return err
+}
+
+func (f *{{.UpperParquetType}}Field) Write(w io.Writer, meta *parquet.Metadata) error {
+	var buf bytes.Buffer
+	for _, v := range f.vals {
+		if err := binary.Write(&buf, binary.LittleEndian, v); err != nil {
+			return err
+		}
+	}
+	return f.DoWrite(w, meta, buf.Bytes(), len(f.vals), f.stats)
+}
+
+func (f *{{.UpperParquetType}}Field) Scan(r *{{.OwnerType}}) {
+	if len(f.vals) == 0 {
+		return
+	}
+
+	f.write(r, f.vals)
+	f.vals = f.vals[1:]
+}
+
+func (f *{{.UpperParquetType}}Field) Add(r *{{.OwnerType}}) {
+	v := f.read(r)
+	f.stats.add(v)
+	f.vals = append(f.vals, v)
+}
+
+func (f *{{.UpperParquetType}}Field) Levels() ([]uint8, []uint8) {
+	return nil, nil
+}
+
+
+
+type {{.ParquetType}}stats struct {
+	min {{.ParquetType}}
+	max {{.ParquetType}}
+}
+
+func new{{.UpperParquetType}}stats() *{{.ParquetType}}stats {
+	return &{{.ParquetType}}stats{
+		min: {{.ParquetType}}(math.Max{{.UpperParquetType}}),
+	}
+}
+
+func (i *{{.ParquetType}}stats) add(val {{.ParquetType}}) {
+	if val < i.min {
+		i.min = val
+	}
+	if val > i.max {
+		i.max = val
+	}
+}
+
+func (f *{{.ParquetType}}stats) bytes(val {{.ParquetType}}) []byte {
+	var buf bytes.Buffer
+	binary.Write(&buf, binary.LittleEndian, val)
+	return buf.Bytes()
+}
+
+func (f *{{.ParquetType}}stats) NullCount() *int64 {
+	return nil
+}
+
+func (f *{{.ParquetType}}stats) DistinctCount() *int64 {
+	return nil
+}
+
+func (f *{{.ParquetType}}stats) Min() []byte {
+	return f.bytes(f.min)
+}
+
+func (f *{{.ParquetType}}stats) Max() []byte {
+	return f.bytes(f.max)
+}
