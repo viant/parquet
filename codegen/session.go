@@ -13,12 +13,12 @@ type session struct {
 	*Options
 	*toolbox.FileSetInfo
 	pkg                  string
-	structCodingCode     []string
 	generatedTypes       map[string]bool
 	generatedParquetType map[string]bool
 	imports              map[string]bool
-	AccessorCode         []string
-	FieldsInit           []string
+	fieldStructCode      []string
+	fieldInitCode        []string
+	accessorMutatorCode  []string
 }
 
 //shallGenerateCode stores generated codes for all types
@@ -79,6 +79,17 @@ func (s *session) readPackageCode() error {
 	return err
 }
 
+func (s *session) addAccessorMutatorSnippet(snippet string) {
+	s.accessorMutatorCode = append(s.accessorMutatorCode, snippet)
+}
+func (s *session) addFieldStructSnippet(snippet string) {
+	s.fieldStructCode = append(s.fieldStructCode, snippet)
+}
+
+func (s *session) addFieldInitSnippet(snippet string) {
+	s.fieldInitCode = append(s.fieldInitCode, snippet)
+}
+
 //addImports adds imports
 func (s *session) addImport(pkg string) {
 	if !strings.Contains(pkg, " ") {
@@ -97,7 +108,7 @@ func (s *session) getImports() string {
 //newSession creates a new session
 func newSession(option *Options) *session {
 	return &session{Options: option,
-		structCodingCode:     make([]string, 0),
+		fieldStructCode:      make([]string, 0),
 		generatedTypes:       make(map[string]bool),
 		imports:              make(map[string]bool),
 		generatedParquetType: make(map[string]bool),

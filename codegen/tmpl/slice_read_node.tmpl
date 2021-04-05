@@ -1,0 +1,11 @@
+{{.Indent}}for {{.Pos}}, {{.Item}} := range {{.ParentType}}.{{.FieldName}} {
+{{.Indent}}    if {{.Pos}} == 1 {
+{{.Indent}}        lastRep = 1
+{{.Indent}}    }
+{{.Indent}}    if len({{.Item}}.{{ChildName}}) == 0 {
+{{.Indent}}        defs = append(defs, 1)
+{{.Indent}}        reps = append(reps, lastRep)
+{{.Indent}}    } else {
+{{.Indent}}         {{.ChildNode}}
+{{.Indent}}     }
+{{.Indent}}}

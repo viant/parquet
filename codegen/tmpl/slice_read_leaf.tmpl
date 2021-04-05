@@ -1,0 +1,8 @@
+{{.Indent}}for {{.Pos}}, {{.Item}} := range {{.ParentType}}.{{.FieldName}} {
+{{.Indent}}    if {{.Pos}} == 1 {
+{{.Indent}}        lastRep = {{.Depth}}
+{{.Indent}}    }
+{{.Indent}}    defs = append(defs, {{.Depth}})
+{{.Indent}}    reps = append(reps, lastRep)
+{{.Indent}}    vals = append(vals, {{.Item}})
+{{.Indent}}}

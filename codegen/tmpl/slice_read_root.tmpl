@@ -1,0 +1,7 @@
+func read{{.FieldName}}(x *{{.OwnerType}}) ({{.ParquetType}}, []uint8, []uint8) {
+	var vals {{.ParquetType}}
+	var defs, reps []uint8
+	var lastRep uint8
+    {{.ChildNode}
+    return vals, defs, reps
+}
