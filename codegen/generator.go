@@ -70,7 +70,6 @@ func generateStructCoding(sess *session, path []string, typeName string) error {
 	for _, field := range typeInfo.Fields() {
 		fmt.Printf("field into :: %v\n", field)
 		receiverAlias := strings.ToLower(typeName[0:1])
-		if isPrimitiveType(field.TypeName) || field.IsSlice {
 			_, err := generateTypeStruct(sess, field, receiverAlias, &codings, typeName)
 			if err != nil {
 				return err
@@ -80,7 +79,6 @@ func generateStructCoding(sess *session, path []string, typeName string) error {
 				return err
 			}
 			generateFieldInits(sess, []string{}, field, &fieldInits)
-		}
 	}
 	sess.AccessorCode = accessorCode
 	sess.FieldsInit = fieldInits
@@ -89,9 +87,7 @@ func generateStructCoding(sess *session, path []string, typeName string) error {
 }
 
 func generateTypeStruct(sess *session, field *toolbox.FieldInfo, ownerAlias string, codings *[]string, ownerType string) (bool, error) {
-	if !isPrimitiveType(field.TypeName) {
-		return false, nil
-	}
+
 	params := NewFieldParams(ownerType, ownerAlias, field.Name, field.TypeName, field.ComponentType)
 	if !sess.shallGenerateParquetFieldType(params.ParquetType, field) {
 		return false, nil
@@ -99,8 +95,8 @@ func generateTypeStruct(sess *session, field *toolbox.FieldInfo, ownerAlias stri
 
 	var err error
 	var code string
-	if sess.OmitEmpty || field.IsPointer || field.IsSlice {
-		if field.TypeName == "string" {
+	if sess.OmitEmpty || field.IsPointer || field.IsSlice || isPrimitiveType(field.TypeName) {
+		if field.TypeName == "string" || field.ComponentType == "string"{
 			code, err = expandFieldTemplate(optionalStringType, params)
 			*codings = append(*codings, code)
 			if err != nil {
@@ -150,7 +146,7 @@ func generateAM(sess *session, field *toolbox.FieldInfo, alias string, accessorC
 	params := NewFieldParams(ownerType, alias, field.Name, field.TypeName, "")
 	var code string
 	var err error
-	if sess.Options.OmitEmpty || field.IsSlice || field.IsPointer {
+	if (sess.Options.OmitEmpty || field.IsSlice || field.IsPointer || isPrimitiveType(field.TypeName)) && field.ComponentType != "string"{
 		if field.IsSlice {
 			code, err = expandAccessorMutatorTemlate(primitiveSliceType, params)
 			if err != nil {
@@ -178,7 +174,7 @@ func generateAM(sess *session, field *toolbox.FieldInfo, alias string, accessorC
 		}
 
 	}
-	if field.TypeName == "string" {
+	if field.TypeName == "string" || field.ComponentType == "string"{
 		code, err = expandAccessorMutatorTemlate(primitiveType, params)
 		if err != nil {
 			return false, err
@@ -204,7 +200,7 @@ func generateFieldInits(sess *session, fieldPath []string, field *toolbox.FieldI
 //isPrimitiveType checks if typeName is primitive types
 func isPrimitiveType(typeName string) bool {
 	switch typeName {
-	case "string", "bool", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "time.Time",
+	case  "bool", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "time.Time",
 		"[]int", "[]int32", "[]int64":
 		return true
 	}
