@@ -100,8 +100,16 @@ func generateTypeStruct(sess *session, field *toolbox.FieldInfo, ownerAlias stri
 	var err error
 	var code string
 	if sess.OmitEmpty || field.IsPointer || field.IsSlice {
+		if field.TypeName == "string" {
+			code, err = expandFieldTemplate(optionalStringType, params)
+			*codings = append(*codings, code)
+			if err != nil {
+				return false, err
+			}
+			return true, nil
+		}
 		if field.IsSlice {
-			code, err = expandSliceTemplate(primitiveSliceFieldType, params)
+			code, err = expandFieldTemplate(primitiveSliceFieldType, params)
 			*codings = append(*codings, code)
 			if err != nil {
 				return false, err
@@ -110,14 +118,14 @@ func generateTypeStruct(sess *session, field *toolbox.FieldInfo, ownerAlias stri
 		}
 
 		if field.IsPointer { // || or filed omit empty annotation
-			code, err = expandOptionalTypeTemplate(primitiveOptionalFieldType, params)
+			code, err = expandFieldTemplate(primitiveOptionalFieldType, params)
 			*codings = append(*codings, code)
 			if err != nil {
 				return false, err
 			}
 			return true, nil
 		} else {
-			code, err = expandRequiredTypeTemplate(primitiveRequiredFieldType, params)
+			code, err = expandFieldTemplate(primitiveRequiredFieldType, params)
 			*codings = append(*codings, code)
 			if err != nil {
 				return false, err
@@ -125,6 +133,15 @@ func generateTypeStruct(sess *session, field *toolbox.FieldInfo, ownerAlias stri
 			return true, nil
 		}
 	}
+	if field.TypeName == "string" {
+		code, err = expandFieldTemplate(requiredStringType, params)
+		*codings = append(*codings, code)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+
 	return true, nil
 }
 
@@ -160,6 +177,14 @@ func generateAM(sess *session, field *toolbox.FieldInfo, alias string, accessorC
 
 		}
 
+	}
+	if field.TypeName == "string" {
+		code, err = expandAccessorMutatorTemlate(primitiveType, params)
+		if err != nil {
+			return false, err
+		}
+		*accessorCode = append(*accessorCode, code)
+		return true, nil
 	}
 
 	return true, nil

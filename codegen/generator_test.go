@@ -26,6 +26,15 @@ func TestGen(t *testing.T) {
 				Dest:   path.Join(parent, "primitives", "message_enc.go"),
 			},
 		},
+
+		{
+			description: "filter  types",
+			options: &Options{
+				Source: path.Join(parent, "filter"),
+				Type:   "Selection",
+				Dest:   path.Join(parent, "filter", "selection_enc.go"),
+			},
+		},
 	}
 
 	for _, useCase := range useCases[0:1] {

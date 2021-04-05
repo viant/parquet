@@ -12,7 +12,8 @@ type Message struct {
 	//K1 []byte
 	//K1 float32
 	//L1 float64
-	A1 []int32
+	A1 string
+	A2 *string
 	//A2 *int32
 	//A3 *int32
 	//B2 *uint

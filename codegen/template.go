@@ -14,6 +14,8 @@ const (
 	primitiveType
 	primitiveOptionalType
 	primitiveSliceType
+	optionalStringType
+	requiredStringType
 	mainType
 )
 
@@ -29,18 +31,6 @@ var FieldOptionalTmpl string
 //go:embed tmpl/field_slice.tmpl
 var FieldSliceTmpl string
 
-var typeRequiredTemplate = map[int]string{
-	primitiveRequiredFieldType: FieldRequiredTmpl,
-}
-
-var typeOptionalTemplate = map[int]string{
-	primitiveOptionalFieldType: FieldOptionalTmpl,
-}
-
-var typeSliceTemplate = map[int]string{
-	primitiveSliceFieldType: FieldSliceTmpl,
-}
-
 //go:embed tmpl/primitive.tmpl
 var primitiveTypeTmpl string
 
@@ -50,6 +40,12 @@ var primitiveTypeOptionalTmpl string
 //go:embed tmpl/primitive_slice.tmpl
 var primitiveTypeSliceTmpl string
 
+//go:embed tmpl/field_optional_string.tmpl
+var fieldOptionalStringTmpl string
+
+//go:embed tmpl/field_required_string.tmpl
+var fieldRequiredStringTmpl string
+
 var amTemplate = map[int]string{
 	primitiveType:         primitiveTypeTmpl,
 	primitiveOptionalType: primitiveTypeOptionalTmpl,
@@ -58,6 +54,15 @@ var amTemplate = map[int]string{
 
 var mainTemplate = map[int]string{
 	mainType: mainTmpl,
+}
+
+var fieldTypeTemplate = map[int]string{
+	primitiveRequiredFieldType: FieldRequiredTmpl,
+	primitiveOptionalFieldType: FieldOptionalTmpl,
+	primitiveSliceFieldType:    FieldSliceTmpl,
+
+	optionalStringType: fieldOptionalStringTmpl,
+	requiredStringType: fieldRequiredStringTmpl,
 }
 
 //expandTemplate replaces templates parameters with actual data
@@ -80,18 +85,10 @@ func expandAccessorMutatorTemlate(key int, data interface{}) (string, error) {
 	return expandTemplate("am", amTemplate, key, data)
 }
 
-func expandRequiredTypeTemplate(key int, data interface{}) (string, error) {
-	return expandTemplate("typeRequired", typeRequiredTemplate, key, data)
-}
-
-func expandOptionalTypeTemplate(key int, data interface{}) (string, error) {
-	return expandTemplate("typeOptional", typeOptionalTemplate, key, data)
+func expandFieldTemplate(key int, data interface{}) (string, error) {
+	return expandTemplate("fieldTypeTemplate", fieldTypeTemplate, key, data)
 }
 
 func expandMainTemplate(key int, data interface{}) (string, error) {
 	return expandTemplate("main", mainTemplate, key, data)
-}
-
-func expandSliceTemplate(key int, data interface{}) (string, error) {
-	return expandTemplate("typeSlice", typeSliceTemplate, key, data)
 }
