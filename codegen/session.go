@@ -31,14 +31,7 @@ func (s *session) shallGenerateCode(typeName string) bool {
 }
 
 //shallGenerateCode stores generated codes for all types
-func (s *session) shallGenerateParquetFieldType(typeName string, field *toolbox.FieldInfo) bool {
-	if field.IsPointer {
-		typeName = "*" + typeName
-	}
-	if field.IsSlice {
-		typeName = "[]" + typeName
-	}
-	// TODO: slices ?
+func (s *session) shallGenerateParquetFieldType(typeName string) bool {
 	if _, ok := s.generatedParquetType[typeName]; ok {
 		return false
 	}

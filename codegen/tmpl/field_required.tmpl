@@ -1,5 +1,5 @@
 
-type {{.FieldStructName}} struct {
+type {{.FieldStructType}} struct {
 	vals []{{.ParquetType}}
 	parquet.RequiredField
 	read  func({{.OwnerAlias}} *{{.OwnerType}}) {{.ParquetType}}
@@ -7,8 +7,8 @@ type {{.FieldStructName}} struct {
 	stats *{{.ParquetType}}stats
 }
 
-func New{{.FieldStructName}}(read func({{.OwnerAlias}} *{{.OwnerType}}) {{.ParquetType}}, write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}), path []string, opts ...func(*parquet.RequiredField)) *{{.FieldStructName}} {
-	return &{{.FieldStructName}}{
+func New{{.FieldStructType}}(read func({{.OwnerAlias}} *{{.OwnerType}}) {{.ParquetType}}, write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}), path []string, opts ...func(*parquet.RequiredField)) *{{.FieldStructType}} {
+	return &{{.FieldStructType}}{
 		read:          read,
 		write:         write,
 		RequiredField: parquet.NewRequiredField(path, opts...),
@@ -16,11 +16,11 @@ func New{{.FieldStructName}}(read func({{.OwnerAlias}} *{{.OwnerType}}) {{.Parqu
 	}
 }
 
-func (f *{{.FieldStructName}}) Schema() parquet.Field {
+func (f *{{.FieldStructType}}) Schema() parquet.Field {
 	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: {{.MethodRoot}}Type, RepetitionType: parquet.RepetitionRequired, Types: []int{0}}
 }
 
-func (f *{{.FieldStructName}}) Read(r io.ReadSeeker, pg parquet.Page) error {
+func (f *{{.FieldStructType}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	rr, _, err := f.DoRead(r, pg)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func (f *{{.FieldStructName}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	return err
 }
 
-func (f *{{.FieldStructName}}) Write(w io.Writer, meta *parquet.Metadata) error {
+func (f *{{.FieldStructType}}) Write(w io.Writer, meta *parquet.Metadata) error {
 	var buf bytes.Buffer
 	for _, v := range f.vals {
 		if err := binary.Write(&buf, binary.LittleEndian, v); err != nil {
@@ -42,7 +42,7 @@ func (f *{{.FieldStructName}}) Write(w io.Writer, meta *parquet.Metadata) error 
 	return f.DoWrite(w, meta, buf.Bytes(), len(f.vals), f.stats)
 }
 
-func (f *{{.FieldStructName}}) Scan(r *{{.OwnerType}}) {
+func (f *{{.FieldStructType}}) Scan(r *{{.OwnerType}}) {
 	if len(f.vals) == 0 {
 		return
 	}
@@ -51,13 +51,13 @@ func (f *{{.FieldStructName}}) Scan(r *{{.OwnerType}}) {
 	f.vals = f.vals[1:]
 }
 
-func (f *{{.FieldStructName}}) Add(r *{{.OwnerType}}) {
+func (f *{{.FieldStructType}}) Add(r *{{.OwnerType}}) {
 	v := f.read(r)
 	f.stats.add(v)
 	f.vals = append(f.vals, v)
 }
 
-func (f *{{.FieldStructName}}) Levels() ([]uint8, []uint8) {
+func (f *{{.FieldStructType}}) Levels() ([]uint8, []uint8) {
 	return nil, nil
 }
 

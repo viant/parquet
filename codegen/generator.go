@@ -42,7 +42,7 @@ func Generate(options *Options) error {
 
 	//dest := session.Dest
 	fs := afs.New()
-	err = fs.Upload(context.Background(),session.Dest,file.DefaultFileOsMode, strings.NewReader(code+strings.Join(session.fieldStructCode, "")))
+	err = fs.Upload(context.Background(),session.Dest,file.DefaultFileOsMode, strings.NewReader(code))
 	return err
 }
 
@@ -94,7 +94,9 @@ func generateFieldCode(sess *session, nodes Nodes) error {
 	node := nodes.Leaf()
 	params := node.NewParams()
 	field := node.Field
-	if !sess.shallGenerateParquetFieldType(params.ParquetType, node.Field) {
+
+
+	if !sess.shallGenerateParquetFieldType(params.FieldStructType) {
 		return nil
 	}
 	var err error

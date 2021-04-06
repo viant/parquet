@@ -12,7 +12,7 @@ type FieldParams struct {
 	FieldName              string
 	MethodSuffix           string
 	FieldType              string
-	FieldStructName        string // []Int32
+	FieldStructType        string // []Int32
 	ParquetType            string //[]int32
 	SimpleMethodRoot       string //Int32
 	SimpleLowerParquetType string //int32
@@ -24,6 +24,8 @@ type FieldParams struct {
 	NilDepth               int
 	Indent                 string
 	OwnerPath              string
+	DefCases               string
+	RepCases               string
 }
 
 func (p *FieldParams) SetIndent(n int) {
@@ -47,7 +49,7 @@ func NewFieldParams(node *Node) *FieldParams {
 		FieldName:       node.FieldName,
 		FieldType:       node.FieldType,
 		ParquetType:     parquetType,
-		FieldStructName: methodRoot + "Field",
+		FieldStructType: methodRoot + "Field",
 		Depth:           node.Depth,
 		NilDepth:        node.Depth - 1,
 		PosVar:          fmt.Sprintf("i%v", node.Pos),

@@ -1,4 +1,4 @@
-type {{.FieldStructName}} struct {
+type {{.FieldStructType}} struct {
 	parquet.OptionalField
 	vals  []{{.ParquetType}}
 	read  func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint8, []uint8)
@@ -6,8 +6,8 @@ type {{.FieldStructName}} struct {
 	stats *{{.ParquetType}}optionalStats
 }
 
-func New{{.FieldStructName}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint8, []uint8), write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *{{.FieldStructName}} {
-	return &{{.FieldStructName}}{
+func New{{.FieldStructType}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint8, []uint8), write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *{{.FieldStructType}} {
+	return &{{.FieldStructType}}{
 		read:          read,
 		write:         write,
 		OptionalField: parquet.NewOptionalField(path, types, opts...),
@@ -15,11 +15,11 @@ func New{{.FieldStructName}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, [
 	}
 }
 
-func (f *{{.FieldStructName}}) Schema() parquet.Field {
+func (f *{{.FieldStructType}}) Schema() parquet.Field {
 	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: {{.MethodRoot}}Type, RepetitionType: f.RepetitionType, Types: f.Types}
 }
 
-func (f *{{.FieldStructName}}) Write(w io.Writer, meta *parquet.Metadata) error {
+func (f *{{.FieldStructType}}) Write(w io.Writer, meta *parquet.Metadata) error {
 	var buf bytes.Buffer
 	for _, v := range f.vals {
 		if err := binary.Write(&buf, binary.LittleEndian, v); err != nil {
@@ -29,7 +29,7 @@ func (f *{{.FieldStructName}}) Write(w io.Writer, meta *parquet.Metadata) error 
 	return f.DoWrite(w, meta, buf.Bytes(), len(f.Defs), f.stats)
 }
 
-func (f *{{.FieldStructName}}) Read(r io.ReadSeeker, pg parquet.Page) error {
+func (f *{{.FieldStructType}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	rr, _, err := f.DoRead(r, pg)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (f *{{.FieldStructName}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	return err
 }
 
-func (f *{{.FieldStructName}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
+func (f *{{.FieldStructType}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
 	vals, defs, reps := f.read({{.OwnerAlias}})
 	f.stats.add(vals, defs)
 	f.vals = append(f.vals, vals...)
@@ -49,7 +49,7 @@ func (f *{{.FieldStructName}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
 	f.Reps = append(f.Reps, reps...)
 }
 
-func (f *{{.FieldStructName}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
+func (f *{{.FieldStructType}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
 	if len(f.Defs) == 0 {
 		return
 	}
@@ -62,7 +62,7 @@ func (f *{{.FieldStructName}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
 	}
 }
 
-func (f *{{.FieldStructName}}) Levels() ([]uint8, []uint8) {
+func (f *{{.FieldStructType}}) Levels() ([]uint8, []uint8) {
 	return f.Defs, f.Reps
 }
 

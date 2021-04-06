@@ -35,9 +35,6 @@ func NewNode(sess *session, ownerType string, field *toolbox.FieldInfo) *Node {
 		FieldName:  field.Name,
 		FieldType:  field.TypeName,
 	}
-	if field.ComponentType != "" {
-		node.FieldType = field.ComponentType
-	}
 	tagItems := getTagOptions(field.Tag, PARQUET_KEY)
 	if tagItems != nil {
 		node.FieldName = tagItems[0]

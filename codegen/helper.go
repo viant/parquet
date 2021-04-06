@@ -26,7 +26,7 @@ func getRequiredFieldInit(nodes Nodes) string {
 	node := nodes.Leaf()
 	params := node.NewParams()
 	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v}, fieldCompression(compression)),`,
-		params.FieldStructName, node.FieldName, node.FieldName, nodes.PathList(),
+		params.FieldStructType, node.FieldName, node.FieldName, nodes.PathList(),
 	)
 }
 
@@ -34,7 +34,7 @@ func getOptionalFieldInit(nodes Nodes) string {
 	node := nodes.Leaf()
 	params := node.NewParams()
 	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, fieldCompression(compression)),`,
-		params.FieldStructName, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(),
+		params.FieldStructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(),
 	)
 }
 
