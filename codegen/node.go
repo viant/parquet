@@ -17,6 +17,10 @@ type Node struct {
 	Parent     *Node
 }
 
+func (n *Node) Indent() int {
+	return n.Depth + 1
+}
+
 func (n *Node) NewParams() *FieldParams {
 	alias := strings.ToLower(n.OwnerType[0:1])
 	param :=  NewFieldParams(n.OwnerType, alias, n.Field.Name, n.Field.TypeName, n.Field.ComponentType, n.Pos, n.Depth)

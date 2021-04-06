@@ -20,7 +20,6 @@ type FieldParams struct {
 	PosVar                 string
 	ItemVar                string
 	ParentType             string
-	ChildName              string
 	Depth                  int
 	NilDepth               int
 	Indent                 string
