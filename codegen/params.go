@@ -37,9 +37,8 @@ func NewFieldParams(node *Node) *FieldParams {
 	if node.Field.ComponentType != "" {
 		methodRoot = lookupParquetType(node.Field.ComponentType)
 	}
-	fieldStructName := methodRoot
 	if node.IsOptional {
-		fieldStructName += "Optional"
+		methodRoot += "Optional"
 	}
 	methodRoot = strings.Title(methodRoot)
 	return &FieldParams{
