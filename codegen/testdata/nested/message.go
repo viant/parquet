@@ -1,14 +1,14 @@
 package nested
 
 type Message struct {
-	S []SubMessage
+	Sub []SubMessage
 }
 
 
 type SubMessage struct {
-	Leaf []Leaf
+	Leaf Leaf
 }
 
 type Leaf struct {
-	M []string
+	Strings []string
 }

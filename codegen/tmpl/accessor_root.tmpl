@@ -1,4 +1,4 @@
-func read{{.FieldName}}(v *{{.OwnerType}}) ({{.ParquetType}}, []uint8, []uint8) {
+func read{{.MethodSuffix}}(v *{{.OwnerType}}) ({{.ParquetType}}, []uint8, []uint8) {
 	var vals {{.ParquetType}}
 	var defs, reps []uint8
 	var lastRep uint8

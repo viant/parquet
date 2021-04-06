@@ -1,4 +1,4 @@
-type StringOptionalField struct {
+type {{.FieldStructName}} struct {
 	parquet.OptionalField
 	vals  []string
 	read  func(r *{{.OwnerType}}) ([]string, []uint8, []uint8)
@@ -6,8 +6,8 @@ type StringOptionalField struct {
 	stats *stringOptionalStats
 }
 
-func NewStringOptionalField(read func(r *{{.OwnerType}}) ([]string, []uint8, []uint8), write func(r *{{.OwnerType}}, vals []string, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *StringOptionalField {
-	return &StringOptionalField{
+func New{{.FieldStructName}}(read func(r *{{.OwnerType}}) ([]string, []uint8, []uint8), write func(r *{{.OwnerType}}, vals []string, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *{{.FieldStructName}} {
+	return &{{.FieldStructName}}{
 		read:          read,
 		write:         write,
 		OptionalField: parquet.NewOptionalField(path, types, opts...),
@@ -15,11 +15,11 @@ func NewStringOptionalField(read func(r *{{.OwnerType}}) ([]string, []uint8, []u
 	}
 }
 
-func (f *StringOptionalField) Schema() parquet.Field {
+func (f *{{.FieldStructName}}) Schema() parquet.Field {
 	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: StringType, RepetitionType: f.RepetitionType, Types: f.Types}
 }
 
-func (f *StringOptionalField) Add(r *{{.OwnerType}}) {
+func (f *{{.FieldStructName}}) Add(r *{{.OwnerType}}) {
 	vals, defs, reps := f.read(r)
 	f.stats.add(vals, defs)
 	f.vals = append(f.vals, vals...)
@@ -27,7 +27,7 @@ func (f *StringOptionalField) Add(r *{{.OwnerType}}) {
 	f.Reps = append(f.Reps, reps...)
 }
 
-func (f *StringOptionalField) Scan(r *{{.OwnerType}}) {
+func (f *{{.FieldStructName}}) Scan(r *{{.OwnerType}}) {
 	if len(f.Defs) == 0 {
 		return
 	}
@@ -40,7 +40,7 @@ func (f *StringOptionalField) Scan(r *{{.OwnerType}}) {
 	}
 }
 
-func (f *StringOptionalField) Write(w io.Writer, meta *parquet.Metadata) error {
+func (f *{{.FieldStructName}}) Write(w io.Writer, meta *parquet.Metadata) error {
 	buf := bytes.Buffer{}
 
 	for _, s := range f.vals {
@@ -53,7 +53,7 @@ func (f *StringOptionalField) Write(w io.Writer, meta *parquet.Metadata) error {
 	return f.DoWrite(w, meta, buf.Bytes(), len(f.Defs), f.stats)
 }
 
-func (f *StringOptionalField) Read(r io.ReadSeeker, pg parquet.Page) error {
+func (f *{{.FieldStructName}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	rr, _, err := f.DoRead(r, pg)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (f *StringOptionalField) Read(r io.ReadSeeker, pg parquet.Page) error {
 	return nil
 }
 
-func (f *StringOptionalField) Levels() ([]uint8, []uint8) {
+func (f *{{.FieldStructName}}) Levels() ([]uint8, []uint8) {
 	return f.Defs, f.Reps
 }
 

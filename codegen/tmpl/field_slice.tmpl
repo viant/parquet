@@ -1,4 +1,4 @@
-type {{.SimpleUpperParquetType}}OptionalField struct {
+type {{.FieldStructName}} struct {
 	parquet.OptionalField
 	vals  {{.ParquetType}}
 	read  func(r *{{.OwnerType}}) ({{.ParquetType}}, []uint8, []uint8)
@@ -7,8 +7,8 @@ type {{.SimpleUpperParquetType}}OptionalField struct {
 }
 
 
-func New{{.SimpleUpperParquetType}}OptionalField(read func(r *{{.OwnerType}}) ({{.ParquetType}}, []uint8, []uint8), write func({{.OwnerAlias}} *{{.OwnerType}}, vals {{.ParquetType}}, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *{{.SimpleUpperParquetType}}OptionalField {
-	return &{{.SimpleUpperParquetType}}OptionalField{
+func New{{.FieldStructName}}(read func(r *{{.OwnerType}}) ({{.ParquetType}}, []uint8, []uint8), write func({{.OwnerAlias}} *{{.OwnerType}}, vals {{.ParquetType}}, defs, reps []uint8) (int, int), path []string, types []int, opts ..func(*parquet.OptionalField)) *{{.FieldStructName}} {
+	return &{{.FieldStructName}}{
 		read:          read,
 		write:         write,
 		OptionalField: parquet.NewOptionalField(path, types, opts...),
@@ -17,12 +17,12 @@ func New{{.SimpleUpperParquetType}}OptionalField(read func(r *{{.OwnerType}}) ({
 }
 
 
-func (f *{{.SimpleUpperParquetType}}OptionalField) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: {{.SimpleUpperParquetType}}Type, RepetitionType: f.RepetitionType, Types: f.Types}
+func (f *{{.FieldStructName}}) Schema() parquet.Field {
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: {{.SimpleMethodRoot}}Type, RepetitionType: f.RepetitionType, Types: f.Types}
 }
 
 
-func (f *{{.SimpleUpperParquetType}}OptionalField) Write(w io.Writer, meta *parquet.Metadata) error {
+func (f *{{.FieldStructName}}) Write(w io.Writer, meta *parquet.Metadata) error {
 	var buf bytes.Buffer
 	for _, v := range f.vals {
 		if err := binary.Write(&buf, binary.LittleEndian, v); err != nil {
@@ -32,7 +32,7 @@ func (f *{{.SimpleUpperParquetType}}OptionalField) Write(w io.Writer, meta *parq
 	return f.DoWrite(w, meta, buf.Bytes(), len(f.Defs), f.stats)
 }
 
-func (f *{{.SimpleUpperParquetType}}OptionalField) Read(r io.ReadSeeker, pg parquet.Page) error {
+func (f *{{.FieldStructName}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	rr, _, err := f.DoRead(r, pg)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (f *{{.SimpleUpperParquetType}}OptionalField) Read(r io.ReadSeeker, pg parq
 	return err
 }
 
-func (f *{{.SimpleUpperParquetType}}OptionalField) Add({{.OwnerAlias}} *{{.OwnerType}}) {
+func (f *{{.FieldStructName}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
 	vals, defs, reps := f.read({{.OwnerAlias}})
 	f.stats.add(vals, defs)
 	f.vals = append(f.vals, vals...)
@@ -52,7 +52,7 @@ func (f *{{.SimpleUpperParquetType}}OptionalField) Add({{.OwnerAlias}} *{{.Owner
 	f.Reps = append(f.Reps, reps...)
 }
 
-func (f *{{.SimpleUpperParquetType}}OptionalField) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
+func (f *{{.FieldStructName}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
 	if len(f.Defs) == 0 {
 		return
 	}
@@ -64,7 +64,7 @@ func (f *{{.SimpleUpperParquetType}}OptionalField) Scan({{.OwnerAlias}} *{{.Owne
 	}
 }
 
-func (f *{{.SimpleUpperParquetType}}OptionalField) Levels() ([]uint8, []uint8) {
+func (f *{{.FieldStructName}}) Levels() ([]uint8, []uint8) {
 	return f.Defs, f.Reps
 }
 
@@ -80,7 +80,7 @@ type {{.SimpleLowerParquetType}}optionalStats struct {
 
 func new{{.SimpleLowerParquetType}}optionalStats(d uint8) *{{.SimpleLowerParquetType}}optionalStats {
 	return &{{.SimpleLowerParquetType}}optionalStats{
-		min:    {{.SimpleLowerParquetType}}(math.Max{{.SimpleUpperParquetType}}),
+		min:    {{.SimpleLowerParquetType}}(math.Max{{.SimpleMethodRoot}}),
 		maxDef: d,
 	}
 }

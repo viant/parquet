@@ -41,7 +41,7 @@ func TestGen(t *testing.T) {
 			options: &Options{
 				Source: path.Join(parent, "nested"),
 				Type:   "Message",
-				Dest:   path.Join(parent, "nested", "message_end.go"),
+				Dest:   path.Join(parent, "nested", "message_enc.go"),
 			},
 		},
 	}

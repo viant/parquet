@@ -18,7 +18,7 @@ const (
 	requiredStringType
 	sliceReadLeaf
 	sliceReadNode
-	sliceReadRoot
+	accessorRoot
 
 	mainType
 )
@@ -50,13 +50,13 @@ var fieldOptionalStringTmpl string
 //go:embed tmpl/field_required_string.tmpl
 var fieldRequiredStringTmpl string
 
-//go:embed tmpl/read_leaf_slice.tmpl
+//go:embed tmpl/accessor_leaf_slice.tmpl
 var readLeafSliceTmpl string
 
-//go:embed tmpl/read_node_range.tmpl
+//go:embed tmpl/accessor_node_range.tmpl
 var readNodeRangeTmpl string
 
-//go:embed tmpl/read_root.tmpl
+//go:embed tmpl/accessor_root.tmpl
 var readRootTmpl string
 
 var amTemplate = map[int]string{
@@ -65,7 +65,7 @@ var amTemplate = map[int]string{
 	primitiveSliceType:    primitiveTypeSliceTmpl,
 	sliceReadLeaf:         readLeafSliceTmpl,
 	sliceReadNode:         readNodeRangeTmpl,
-	sliceReadRoot:         readRootTmpl,
+	accessorRoot:          readRootTmpl,
 }
 
 var mainTemplate = map[int]string{

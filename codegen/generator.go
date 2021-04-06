@@ -1,7 +1,10 @@
 package codegen
 
 import (
+	"context"
 	"fmt"
+	"github.com/viant/afs"
+	"github.com/viant/afs/file"
 	"strings"
 )
 
@@ -9,12 +12,10 @@ import (
 func Generate(options *Options) error {
 	session := newSession(options)
 	addRequiredImports(session)
-
 	err := session.readPackageCode()
 	if err != nil {
 		return err
 	}
-	//	compressionFields := make([]string,0)
 	if err := generatePathCode(session, Nodes{}, options.Type); err != nil {
 		return err
 	}
@@ -40,12 +41,8 @@ func Generate(options *Options) error {
 	}
 
 	//dest := session.Dest
-	//	err = ioutil.WriteFile(dest, []byte(code+strings.Join(session.fieldStructCode, "")), 0644)
-	//err = ioutil.WriteFile(dest, []byte(code), 0644)
-	session.fieldStructCode = []string{}
-	if 1==0 {
-		fmt.Printf("%v\n", code)
-	}
+	fs := afs.New()
+	err = fs.Upload(context.Background(),session.Dest,file.DefaultFileOsMode, strings.NewReader(code+strings.Join(session.fieldStructCode, "")))
 	return err
 }
 
@@ -61,10 +58,8 @@ func addRequiredImports(session *session) {
 }
 
 func generatePathCode(sess *session, nodes Nodes, typeName string) error {
-
 	typeInfo := sess.FileSetInfo.Type(normalizeTypeName(typeName))
 	if typeInfo == nil {
-
 		return fmt.Errorf("failed to lookup type %v", typeName)
 	}
 	fields := typeInfo.Fields()
@@ -79,7 +74,6 @@ func generatePathCode(sess *session, nodes Nodes, typeName string) error {
 			}
 			continue
 		}
-
 		if err := generatePathCode(sess, fieldNodes, field.TypeName); err != nil {
 			return err
 		}
@@ -89,13 +83,15 @@ func generatePathCode(sess *session, nodes Nodes, typeName string) error {
 
 
 
-func generateFieldCode(sess *session, path Nodes) error {
-	if err := generateAM(sess, path); err != nil {
+func generateFieldCode(sess *session, nodes Nodes) error {
+
+	if err := generateAccessor(sess, nodes); err != nil {
 		return err
 	}
-	generateFieldInits(sess, path)
 
-	node := path.Leaf()
+	generateFieldInits(sess, nodes)
+
+	node := nodes.Leaf()
 	params := node.NewParams()
 	field := node.Field
 	if !sess.shallGenerateParquetFieldType(params.ParquetType, node.Field) {
@@ -136,7 +132,7 @@ func generateFieldCode(sess *session, path Nodes) error {
 func generateAM(sess *session, nodes Nodes) error  {
 	leaf := nodes.Leaf()
 	if leaf.Field.IsSlice {
-		if err := generateSliceAccessor(sess, nodes);err != nil {
+		if err := generateAccessor(sess, nodes);err != nil {
 			return err
 		}
 	}

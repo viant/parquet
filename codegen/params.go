@@ -2,7 +2,6 @@ package codegen
 
 import (
 	"fmt"
-	"github.com/viant/toolbox"
 	"strings"
 )
 
@@ -11,10 +10,11 @@ type FieldParams struct {
 	OwnerType              string
 	OwnerAlias             string
 	FieldName              string
+	MethodSuffix           string
 	FieldType              string
-	UpperParquetType       string // []Int32
+	FieldStructName        string // []Int32
 	ParquetType            string //[]int32
-	SimpleUpperParquetType string //Int32
+	SimpleMethodRoot       string //Int32
 	SimpleLowerParquetType string //int32
 	ChildSnippet           string
 	PosVar                 string
@@ -30,20 +30,28 @@ func (p *FieldParams) SetIndent(n int) {
 	p.Indent = strings.Repeat(" ", n)
 }
 
-func NewFieldParams(ownerType, ownerAlias, fieldName, fieldType, componentType string, pos, depth int) *FieldParams {
-	parquetType := lookupParquetType(fieldType)
+func NewFieldParams(node *Node) *FieldParams {
+	alias := strings.ToLower(node.OwnerType[0:1])
+	parquetType := lookupParquetType(node.FieldType)
+	methodRoot := parquetType
+	if node.Field.ComponentType != "" {
+		methodRoot = lookupParquetType(node.Field.ComponentType)
+	}
+	fieldStructName := methodRoot
+	if node.IsOptional {
+		fieldStructName += "Optional"
+	}
+	methodRoot = strings.Title(methodRoot)
 	return &FieldParams{
-		OwnerType:              ownerType,
-		OwnerAlias:             ownerAlias,
-		FieldName:              fieldName,
-		FieldType:              fieldType,
-		ParquetType:            parquetType,
-		UpperParquetType:       toolbox.ToCaseFormat(parquetType, toolbox.CaseLowerCamel, toolbox.CaseUpperCamel),
-		SimpleLowerParquetType: componentType,
-		SimpleUpperParquetType: toolbox.ToCaseFormat(componentType, toolbox.CaseLowerCamel, toolbox.CaseUpperCamel),
-		Depth:                  depth,
-		NilDepth:               depth - 1,
-		PosVar:                 fmt.Sprintf("i%v", pos),
-		ItemVar:                fmt.Sprintf("v%v", pos),
+		OwnerType:       node.OwnerType,
+		OwnerAlias:      alias,
+		FieldName:       node.FieldName,
+		FieldType:       node.FieldType,
+		ParquetType:     parquetType,
+		FieldStructName: methodRoot + "Field",
+		Depth:           node.Depth,
+		NilDepth:        node.Depth - 1,
+		PosVar:          fmt.Sprintf("i%v", node.Pos),
+		ItemVar:         fmt.Sprintf("v%v", node.Pos),
 	}
 }
