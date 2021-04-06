@@ -180,7 +180,7 @@ func (f Field) Required() bool {
 }
 
 // Init is called by parquetgen's templates to generate the code
-// that writes to a struct's field (for example: x.Friend.Hobby = &Item{})
+// that writes to a struct's field (for example: x.Friend.Hobby = &ItemVar{})
 func (f Field) Init(def, rep int) string {
 	md := f.MaxDef()
 	if rep > 0 {

@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/viant/toolbox"
 	"os"
@@ -18,28 +19,38 @@ func TestGen(t *testing.T) {
 		hasError    bool
 	}{
 
+		//{
+		//	description: "primitive  types",
+		//	options: &Options{
+		//		Source: path.Join(parent, "primitives"),
+		//		Type:   "Message",
+		//		Dest:   path.Join(parent, "primitives", "message_enc.go"),
+		//	},
+		//},
+		//
+		//{
+		//	description: "filter  types",
+		//	options: &Options{
+		//		Source: path.Join(parent, "filter"),
+		//		Type:   "Selection",
+		//		Dest:   path.Join(parent, "filter", "selection_enc.go"),
+		//	},
+		//},
 		{
-			description: "primitive  types",
+			description: "nested  types",
 			options: &Options{
-				Source: path.Join(parent, "primitives"),
+				Source: path.Join(parent, "nested"),
 				Type:   "Message",
-				Dest:   path.Join(parent, "primitives", "message_enc.go"),
-			},
-		},
-
-		{
-			description: "filter  types",
-			options: &Options{
-				Source: path.Join(parent, "filter"),
-				Type:   "Selection",
-				Dest:   path.Join(parent, "filter", "selection_enc.go"),
+				Dest:   path.Join(parent, "nested", "message_end.go"),
 			},
 		},
 	}
 
 	for _, useCase := range useCases[0:1] {
 		err := Generate(useCase.options)
-		assert.Nil(t, err, useCase.hasError)
+		if ! assert.Nil(t, err, useCase.hasError) {
+			fmt.Printf("%v\n", err)
+		}
 
 	}
 }

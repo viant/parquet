@@ -1,9 +1,7 @@
 package codegen
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/viant/toolbox"
 	"reflect"
 	"strings"
 )
@@ -24,53 +22,29 @@ func getTagOptions(tag, key string) []string {
 	return strings.Split(options, ",")
 }
 
-//NewInt32Field(readID, writeID, []string{"id"}, fieldCompression(compression)),
-//NewInt32OptionalField(readAge, writeAge, []string{"age"}, []int{1}, optionalFieldCompression(compression)),
-
-func getRequiredFieldInit(fieldPath []string, field *toolbox.FieldInfo) string {
-	var fieldName = field.Name
-	tagItems := getTagOptions(field.Tag, PARQUET_KEY)
-	if tagItems != nil {
-		fieldName = tagItems[0]
-	}
-
-	parquetType := lookupParquetType(field.TypeName)
-	camelParquetType := strings.Title(parquetType)
+func getRequiredFieldInit(nodes Nodes) string {
+	node := nodes.Leaf()
+	params := node.NewParams()
 	return fmt.Sprintf(`New%vField(read%v, write%v,[]string{%v}, fieldCompression(compression)),`,
-		camelParquetType, field.Name, field.Name, inlineQuotedSlice(fieldPath, fieldName),
+		params.UpperParquetType, node.FieldName, node.FieldName, nodes.PathList(),
 	)
 }
 
-func getOptionalFieldInit(field *toolbox.FieldInfo) string {
-	var parquetName = field.Name
-	tagItems := getTagOptions(field.Tag, PARQUET_KEY)
-	if tagItems != nil {
-		parquetName = tagItems[0]
-	}
-	aFieldType := strings.Title(field.TypeName)
-	if field.IsSlice {
-		aFieldType = strings.Title(field.ComponentType)
-	}
-	var reps = getRepNumber(field)
-	var buffer bytes.Buffer
-	buffer.WriteString("New" + aFieldType + "OptionalField(read" + field.Name + ",write" + field.Name + ",[]string{\"" + parquetName + "\"}," + reps + ",optionalFieldCompression(compression)),")
-	return buffer.String()
+func getOptionalFieldInit(nodes Nodes) string {
+	node := nodes.Leaf()
+	params := node.NewParams()
+	return fmt.Sprintf(`New%vOptionalField(read%v, write%v,[]string{%v},[]int{%v} fieldCompression(compression)),`,
+		params.UpperParquetType, node.FieldName, node.FieldName, nodes.PathList(),nodes.RepetitionTypesList(),
+	)
 }
 
-func inlineQuotedSlice(path []string, name string) string {
-	if len(path) == 0 {
-		path = []string{}
+func normalizeTypeName(name string) string {
+	for _, seq := range[]string {"[]","*"} {
+		count := strings.Count(name, seq)
+		if count == 0 {
+			continue
+		}
+		name = strings.Replace(name, seq, "",  count)
 	}
-	var items = append(path, name)
-	for i, item := range items {
-		items[i] = `"` + item + `"`
-	}
-	return strings.Join(items, ",")
-}
-
-func getRepNumber(field *toolbox.FieldInfo) string {
-	if field.IsSlice {
-		return "[]int{2}"
-	}
-	return "[]int{1}"
+	return name
 }

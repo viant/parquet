@@ -1,22 +1,35 @@
 package codegen
 
-import "github.com/viant/toolbox"
+import "fmt"
 
-func generateSliceAccessor(sess *session, field *toolbox.FieldInfo, predecessor []string, accessorCode *[]string, rootType string) {
-	depthLevel(sess, append(predecessor, field.Name), rootType)
-}
+func generateSliceAccessor(sess *session, nodes Nodes) error {
 
-
-func depthLevel(sess *session, path []string, rootType string) int {
-	aType := sess.FileSetInfo.Type(rootType)
-	aField := aType.Field(path[0])
-	depth := 0
-	if aField.IsPointer || aField.IsSlice || sess.Options.OmitEmpty  { //TODO || annotation omitempty
-		depth++
+	leaf := nodes.Leaf()
+	params := leaf.NewParams()
+	params.SetIndent(4 * leaf.Depth)
+	leafSnippet, err := expandAccessorMutatorTemlate(sliceReadLeaf, params)
+	if err != nil {
+		return err
 	}
-	path = path[1:]
-	if len(path) == 0 {
-		return depth
+	childSnippet := leafSnippet
+	for i := len(nodes) - 2; i >= 0; i-- {
+		node := nodes[i]
+		params = node.NewParams()
+		params.SetIndent(4 * node.Depth)
+		params.ChildSnippet = childSnippet
+		params.ChildName = nodes[i+1].Field.Name
+		//if node.Field.IsSlice {
+			if childSnippet, err = expandAccessorMutatorTemlate(sliceReadNode, params); err != nil {
+				return err
+			}
+		//}
 	}
-	return depth + depthLevel(sess, path, aField.TypeName)
+	root := nodes[0]
+	rootParams := root.NewParams()
+	rootParams.ChildSnippet = childSnippet
+	code, err := expandAccessorMutatorTemlate(sliceReadRoot, params)
+	sess.addAccessorMutatorSnippet(code)
+	fmt.Printf("%v, %v\n", code, err)
+
+	return err
 }

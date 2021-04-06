@@ -2,8 +2,6 @@ package codegen
 
 import (
 	"fmt"
-	"github.com/viant/toolbox"
-	"io/ioutil"
 	"strings"
 )
 
@@ -17,11 +15,11 @@ func Generate(options *Options) error {
 		return err
 	}
 	//	compressionFields := make([]string,0)
-	if err := generateStructCoding(session, []string{}, options.Type); err != nil {
+	if err := generatePathCode(session, Nodes{}, options.Type); err != nil {
 		return err
 	}
 
-	prefix, err := expandMainTemplate(mainType, struct {
+	code, err := expandMainTemplate(mainType, struct {
 		Pkg           string
 		Imports       string
 		AccessorCode  string
@@ -41,10 +39,13 @@ func Generate(options *Options) error {
 		return err
 	}
 
-	dest := session.Dest
-	//	err = ioutil.WriteFile(dest, []byte(prefix+strings.Join(session.fieldStructCode, "")), 0644)
-	err = ioutil.WriteFile(dest, []byte(prefix), 0644)
+	//dest := session.Dest
+	//	err = ioutil.WriteFile(dest, []byte(code+strings.Join(session.fieldStructCode, "")), 0644)
+	//err = ioutil.WriteFile(dest, []byte(code), 0644)
 	session.fieldStructCode = []string{}
+	if 1==0 {
+		fmt.Printf("%v\n", code)
+	}
 	return err
 }
 
@@ -59,56 +60,50 @@ func addRequiredImports(session *session) {
 	session.addImport("sch github.com/viant/parquet/schema")
 }
 
-func generateStructCoding(sess *session, path []string, typeName string) error {
-	if ok := sess.shallGenerateCode(typeName); !ok {
-		return nil
-	}
-	typeInfo := sess.FileSetInfo.Type(typeName)
+func generatePathCode(sess *session, nodes Nodes, typeName string) error {
 
-	for _, field := range typeInfo.Fields() {
-		fmt.Printf("field into :: %v\n", field)
-		err := generateFieldCode(sess, []string{}, field, typeName)
-		if err != nil {
-			return err
+	typeInfo := sess.FileSetInfo.Type(normalizeTypeName(typeName))
+	if typeInfo == nil {
+
+		return fmt.Errorf("failed to lookup type %v", typeName)
+	}
+	fields := typeInfo.Fields()
+	for i, field := range fields {
+		node := NewNode(sess, typeName, fields[i])
+		fieldNodes := append(nodes, node)
+		if isLeafType(field.TypeName) {
+			fieldNodes.Init()
+			err := generateFieldCode(sess, fieldNodes)
+			if err != nil {
+				return err
+			}
+			continue
 		}
 
+		if err := generatePathCode(sess, fieldNodes, field.TypeName); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func generateFieldCode(sess *session, predecessor []string, field *toolbox.FieldInfo, rootType string) error {
-	ownerAlias := strings.ToLower(rootType[0:1])
-	isLeafNode := isBaseType(field.TypeName)
-	if isLeafNode {
-		if err := generateAM(sess, predecessor, field, rootType); err != nil {
-			return err
-		}
-		generateFieldInits(sess, predecessor, field)
+
+
+func generateFieldCode(sess *session, path Nodes) error {
+	if err := generateAM(sess, path); err != nil {
+		return err
 	}
-	params := NewFieldParams(rootType, ownerAlias, field.Name, field.TypeName, field.ComponentType)
-	if !sess.shallGenerateParquetFieldType(params.ParquetType, field) {
+	generateFieldInits(sess, path)
+
+	node := path.Leaf()
+	params := node.NewParams()
+	field := node.Field
+	if !sess.shallGenerateParquetFieldType(params.ParquetType, node.Field) {
 		return nil
 	}
-
 	var err error
 	var code string
-	if !isLeafNode {
-		aType := sess.FileSetInfo.Type(field.TypeName)
-		if aType.IsStruct {
-			path := append(predecessor, field.Name)
-			for _, field := range aType.Fields() {
-				if err = generateFieldCode(sess, path, field, rootType); err != nil {
-					return err
-				}
-			}
-
-		} else if aType.IsSlice {
-
-		}
-		return nil
-	}
-
-	if sess.OmitEmpty || field.IsPointer || field.IsSlice || isLeafNode {
+	if sess.OmitEmpty || field.IsPointer || field.IsSlice {
 		if field.TypeName == "string" || field.ComponentType == "string" {
 			code, err = expandFieldTemplate(optionalStringType, params)
 			sess.addFieldStructSnippet(code)
@@ -138,58 +133,63 @@ func generateFieldCode(sess *session, predecessor []string, field *toolbox.Field
 	return nil
 }
 
-
-
-func generateAM(sess *session, predecessor []string, field *toolbox.FieldInfo, rootType string) error {
-	ownerAlias := strings.ToLower(rootType[0:1])
-	params := NewFieldParams(rootType, ownerAlias, field.Name, field.TypeName, "")
-	var code string
-	var err error
-	if (sess.Options.OmitEmpty || field.IsSlice || field.IsPointer || isBaseType(field.TypeName)) && field.ComponentType != "string" {
-		if field.IsSlice {
-			//TODO slice logic
-		}
-		if field.IsPointer {
-			code, err = expandAccessorMutatorTemlate(primitiveOptionalType, params)
-			if err != nil {
-				return err
-			}
-			sess.addAccessorMutatorSnippet(code)
-			return nil
-
-		} else {
-			code, err = expandAccessorMutatorTemlate(primitiveType, params)
-			if err != nil {
-				return err
-			}
-			sess.addAccessorMutatorSnippet(code)
-			return nil
-		}
-
-	}
-	if field.TypeName == "string" || field.ComponentType == "string" {
-		code, err = expandAccessorMutatorTemlate(primitiveType, params)
-		if err != nil {
+func generateAM(sess *session, nodes Nodes) error  {
+	leaf := nodes.Leaf()
+	if leaf.Field.IsSlice {
+		if err := generateSliceAccessor(sess, nodes);err != nil {
 			return err
 		}
-		sess.addAccessorMutatorSnippet(code)
-		return nil
 	}
+	//ownerAlias := strings.ToLower(rootType[0:1])
+	//params := NewFieldParams(rootType, ownerAlias, field.Name, field.TypeName, "", 0)
+	//var code string
+	//var err error
+	//if (sess.Options.OmitEmpty || field.IsSlice || field.IsPointer || isLeafType(field.TypeName)) && field.ComponentType != "string" {
+	//	if field.IsSlice {
+	//		//TODO slice logic
+	//	}
+	//	if field.IsPointer {
+	//		code, err = expandAccessorMutatorTemlate(primitiveOptionalType, params)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		sess.addAccessorMutatorSnippet(code)
+	//		return nil
+	//
+	//	} else {
+	//		code, err = expandAccessorMutatorTemlate(primitiveType, params)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		sess.addAccessorMutatorSnippet(code)
+	//		return nil
+	//	}
+	//
+	//}
+	//if field.TypeName == "string" || field.ComponentType == "string" {
+	//	code, err = expandAccessorMutatorTemlate(primitiveType, params)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	sess.addAccessorMutatorSnippet(code)
+	//	return nil
+	//}
 	return nil
 }
 
-func generateFieldInits(sess *session, predecessor []string, field *toolbox.FieldInfo) {
+func generateFieldInits(sess *session, path Nodes) {
 	var code string
-	if sess.Options.OmitEmpty || field.IsPointer || field.IsSlice {
-		code = getOptionalFieldInit(field)
+	node := path.Leaf()
+	if node.IsOptional {
+		code = getOptionalFieldInit(path)
 	} else {
-		code = getRequiredFieldInit(predecessor, field)
+		code = getRequiredFieldInit(path)
 	}
 	sess.addFieldInitSnippet(code)
 }
 
-//isBaseType checks if typeName is primitive types
-func isBaseType(typeName string) bool {
+//isLeafType checks if typeName is primitive types
+func isLeafType(typeName string) bool {
 	switch typeName {
 	case "bool", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "[]string",
 		"[]int", "[]int32", "[]int64":

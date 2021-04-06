@@ -3948,7 +3948,7 @@ func (p *SchemaElement) String() string {
 //  - Encoding: Encoding used for this data page *
 //  - DefinitionLevelEncoding: Encoding used for definition levels *
 //  - RepetitionLevelEncoding: Encoding used for repetition levels *
-//  - Statistics: Optional statistics for the data in this page*
+//  - Statistics: IsOptional statistics for the data in this page*
 type DataPageHeader struct {
 	NumValues               int32       `thrift:"num_values,1,required" db:"num_values" json:"num_values"`
 	Encoding                Encoding    `thrift:"encoding,2,required" db:"encoding" json:"encoding"`
@@ -6809,7 +6809,7 @@ func (p *PageEncodingStats) String() string {
 //  - TotalUncompressedSize: total byte size of all uncompressed pages in this column chunk (including the headers) *
 //  - TotalCompressedSize: total byte size of all compressed, and potentially encrypted, pages
 // in this column chunk (including the headers) *
-//  - KeyValueMetadata: Optional key/value metadata *
+//  - KeyValueMetadata: IsOptional key/value metadata *
 //  - DataPageOffset: Byte offset from beginning of file to first data page *
 //  - IndexPageOffset: Byte offset from beginning of file to root index page *
 //  - DictionaryPageOffset: Byte offset from the beginning of file to first (only) dictionary page *
@@ -10539,7 +10539,7 @@ func (p *EncryptionAlgorithm) String() string {
 // The first element is the root *
 //  - NumRows: Number of rows in this file *
 //  - RowGroups: Row groups in this file *
-//  - KeyValueMetadata: Optional key/value metadata *
+//  - KeyValueMetadata: IsOptional key/value metadata *
 //  - CreatedBy: String for application that wrote this file.  This should be in the format
 // <Application> version <App Version> (build <App Build Hash>).
 // e.g. impala version 1.0 (build 6cf94d29b2b7115df4de2c06e2ab4326d721eb55)
