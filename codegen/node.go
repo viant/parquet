@@ -5,9 +5,10 @@ import (
 )
 
 type Node struct {
-	OwnerType  string
-	OwnerPath  string
-	Depth      int
+	OwnerType string
+	OwnerPath string
+	MaxDef    int
+	Depth     int
 	Pos        int
 	Field      *toolbox.FieldInfo
 	FieldName  string
@@ -26,11 +27,11 @@ func (n *Node) NewParams() *FieldParams {
 	return param
 }
 
-
 func NewNode(sess *session, ownerType string, field *toolbox.FieldInfo) *Node {
 	node := &Node{
-		OwnerType:  ownerType,
-		Field:      field,
+		OwnerType: ownerType,
+		Field:     field,
+
 		IsOptional: field.IsPointer || sess.OmitEmpty || field.IsSlice,
 		FieldName:  field.Name,
 		FieldType:  field.TypeName,

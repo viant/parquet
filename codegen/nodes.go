@@ -16,6 +16,24 @@ func (n Nodes) MethodSuffix() string {
 	return strings.Join(result, "")
 }
 
+func (n Nodes) RepeatedPos(def int) int {
+	if def == 0 {
+		return -1
+	}
+	def--
+	k := 0
+	for i, item := range n {
+		if item.Field.IsSlice {
+			k++
+			if k >= def {
+				return i
+			}
+		}
+
+	}
+	return -1
+}
+
 func (n Nodes) Leaf() *Node {
 	return n[len(n)-1]
 }
@@ -72,28 +90,6 @@ func (n Nodes) PathList() string {
 	return strings.Join(items, ",")
 }
 
-/*
-	Root->R(s)->S1(s)->L(s)
-  ->  R.S1.L1
-  ->    item.L1
-
-
-
-*/
-
-func (n Nodes) MutatorOwnerPath(endNodePos int) string {
-	var elements = make([]string, 0)
-	if endNodePos == 0 {
-		return "v"
-	}
-	elements = append(elements, "v")
-	for i := 1; i < endNodePos; i++ {
-		elements = append(elements, n[i].Field.Name)
-	}
-	return strings.Join(elements, ".")
-}
-
-
 func (n Nodes) AccessorOwnerPath(endNodePos int) string {
 	var elements = make([]string, 0)
 	if endNodePos == 0 {
@@ -114,7 +110,73 @@ func (n Nodes) AccessorOwnerPath(endNodePos int) string {
 	return strings.Join(elements, ".")
 }
 
-func (n Nodes) DefCases() []string {
+//DefCaseAppendPath produces accessor to append at depth (def -1)
+func (n Nodes) DefCaseAppendPath(caseNo int) string {
+	if caseNo == 0 {
+		return ""
+	}
+	depth := caseNo - 1
+	result := []string{fmt.Sprintf("x")}
+	repeatedCount := 0
+	slicePos := -1
+	k := 0
+	for i, node := range n {
+		isLast := k > depth
+		isRepeated := node.Field.IsSlice
+		if isLast && slicePos >= 0 {
+			break
+		}
+
+		if isRepeated {
+			if repeatedCount > 0 {
+				result[slicePos] += fmt.Sprintf("[ind[%v]]", repeatedCount-1)
+			}
+			slicePos = i
+			repeatedCount++
+		}
+		result = append(result, node.FieldName)
+		if isRepeated {
+			k++
+		}
+	}
+	return strings.Join(result, ".")
+}
+
+func (n Nodes) DefCaseAppendValue(caseNo int) string {
+	if caseNo == 0 {
+		return ""
+	}
+	pos := n.RepeatedPos(caseNo)
+	if pos == -1 {
+		return ""
+	}
+	var nodes = make(Nodes, 0)
+	nodes = append(nodes, n[pos])
+	if pos+1 < len(n) {
+		nodes = append(nodes, n[pos+1])
+	}
+	depth := caseNo - 1
+	modifier := ""
+	init := ""
+	if depth == 0 || len(nodes) == 1 {
+		if len(nodes) > 1 && !nodes[1].Field.IsSlice {
+			modifier = "[]"
+			init = "{}"
+		}
+		return fmt.Sprintf(`%v%v{%v}`, modifier, nodes[0].Field.Name, init)
+	}
+	if nodes[1].Field.IsSlice {
+		modifier = "[]"
+		init = "{}"
+	}
+	return fmt.Sprintf(`%v{%v: %v%v{%v}}`, nodes[0].Field.Name, nodes[1].Field.Name,
+		modifier, nodes[1].Field.Name, init)
+}
+
+func (n Nodes) DefCases(indent int) []string {
+
+	
+	indentSpace := strings.Repeat(" ", indent)
 	var result = make([]string, 0)
 	d := 1
 	for i := 0; i < len(n)-1; i++ {
@@ -122,32 +184,11 @@ func (n Nodes) DefCases() []string {
 		if !item.Field.IsSlice {
 			continue
 		}
-		path := n.MutatorOwnerPath(i) + "." + item.Field.Name
-		init := fmt.Sprintf("    %v = append(%v, %v{})", path, path, item.Field.ComponentType)
+		path := ""
+		init := fmt.Sprintf(indentSpace+"%v = append(%v, %v)", path, path, item.Field.ComponentType)
 		result = append(result, init)
 		d++
 	}
 	result = append(result, "TODO add me")
 	return result
 }
-
-
-/*
-case 1:
-			x.B = append(x.B, B{})
-		case 2:
-			x.B = append(x.B, B{C: []C{{}}})
-		case 3:
-
-			switch rep {
-			case 0:
-				x.B = []B{{C: []C{{S: []string{vals[nVals]}}}}}
-			case 1:
-				x.B = append(x.B, B{C: []C{{S: []string{vals[nVals]}}}})
-			case 2:
-				x.B[ind[0]].C = append(x.B[ind[0]].C, C{S: []string{vals[nVals]}})
-			case 3:
-				x.B[ind[0]].C[ind[1]].S = append(x.B[ind[0]].C[ind[1]].S, vals[nVals])
-			}
-			nVals++
-*/
