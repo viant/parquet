@@ -8,6 +8,16 @@ import (
 
 type Nodes []*Node
 
+func (n Nodes) MaxDef() int {
+	maxDef := 0
+	for _, item := range n {
+		if item.IsOptional {
+			maxDef++
+		}
+	}
+	return maxDef
+}
+
 func (n Nodes) MethodSuffix() string {
 	var result = make([]string, len(n))
 	for i, item := range n {
@@ -116,14 +126,14 @@ func (n Nodes) DefCaseAppendPath(caseNo int) string {
 		return ""
 	}
 	depth := caseNo - 1
-	result := []string{fmt.Sprintf("x")}
+	result := []string{fmt.Sprintf("v")}
 	repeatedCount := 0
 	slicePos := -1
 	k := 0
-	for i, node := range n {
-		isLast := k > depth
+	for _, node := range n {
+		isLast := k >= depth
 		isRepeated := node.Field.IsSlice
-		if isLast && slicePos >= 0 {
+		if isLast && slicePos > 0 {
 			break
 		}
 
@@ -131,7 +141,7 @@ func (n Nodes) DefCaseAppendPath(caseNo int) string {
 			if repeatedCount > 0 {
 				result[slicePos] += fmt.Sprintf("[ind[%v]]", repeatedCount-1)
 			}
-			slicePos = i
+			slicePos = len(result)
 			repeatedCount++
 		}
 		result = append(result, node.FieldName)
@@ -174,21 +184,22 @@ func (n Nodes) DefCaseAppendValue(caseNo int) string {
 }
 
 func (n Nodes) DefCases(indent int) []string {
-
-	
 	indentSpace := strings.Repeat(" ", indent)
 	var result = make([]string, 0)
-	d := 1
-	for i := 0; i < len(n)-1; i++ {
-		item := n[i]
-		if !item.Field.IsSlice {
+	maxDef := n.MaxDef()
+	for i, item := range n {
+		if ! item.Field.IsSlice {
 			continue
 		}
-		path := ""
-		init := fmt.Sprintf(indentSpace+"%v = append(%v, %v)", path, path, item.Field.ComponentType)
+		path := n.DefCaseAppendPath(i+1)
+		value := n.DefCaseAppendValue(i+1)
+		init := fmt.Sprintf(indentSpace+"%v = append(%v, %v)", path, path, value)
 		result = append(result, init)
-		d++
+		if maxDef -1 >= len(result) {
+			break
+		}
 	}
+
 	result = append(result, "TODO add me")
 	return result
 }

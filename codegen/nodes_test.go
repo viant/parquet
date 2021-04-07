@@ -188,11 +188,11 @@ func TestNodes_DefCaseAppendPath(t *testing.T) {
 				},
 			},
 			expect: []string{
-				"x.A",
-				"x.A",
-				"x.A[ind[0]].B",
-				"x.A[ind[0]].B[ind[1]].C",
-				"x.A[ind[0]].B[ind[1]].C[ind[2]].D",
+				"v.A",
+				"v.A",
+				"v.A[ind[0]].B",
+				"v.A[ind[0]].B[ind[1]].C",
+				"v.A[ind[0]].B[ind[1]].C[ind[2]].D",
 			},
 		},
 
@@ -232,10 +232,10 @@ func TestNodes_DefCaseAppendPath(t *testing.T) {
 				},
 			},
 			expect: []string{
-				"x.A",
-				"x.A",
-				"x.A[ind[0]].B.C",
-				"x.A[ind[0]].B.C[ind[1]].D",
+				"v.A",
+				"v.A",
+				"v.A[ind[0]].B.C",
+				"v.A[ind[0]].B.C[ind[1]].D",
 			},
 		},
 		{
@@ -271,9 +271,9 @@ func TestNodes_DefCaseAppendPath(t *testing.T) {
 				},
 			},
 			expect: []string{
-				"x.A.B.C",
-				"x.A.B.C",
-				"x.A.B.C[ind[0]].D",
+				"v.A.B.C",
+				"v.A.B.C",
+				"v.A.B.C[ind[0]].D",
 			},
 		},
 		{
@@ -315,9 +315,9 @@ func TestNodes_DefCaseAppendPath(t *testing.T) {
 				},
 			},
 			expect: []string{
-				"x.A.B.C.D",
-				"x.A.B.C.D",
-				"x.A.B.C.D[ind[0]].E",
+				"v.A.B.C.D",
+				"v.A.B.C.D",
+				"v.A.B.C.D[ind[0]].E",
 			},
 		},
 	}
@@ -556,8 +556,10 @@ func TestNodes_DefCases(t *testing.T) {
 			},
 			expect: []string{
 				"v.A = append(v.A, A{})",
-				"x.A = append(x.A, A{B: []B{{}}})",
-				"x.A[ind[0]].B = append(x.A[ind[0]].B, B{C: []C{{}}})",
+				"v.A = append(v.A, A{B: []B{{}}})",
+				"v.A[ind[0]].B = append(v.A[ind[0]].B, B{C: []C{{}}})",
+				"v.A[ind[0]].B[ind[1]].C = append(v.A[ind[0]].B[ind[1]].C, C{D: []D{{}}})",
+				"TODO add me",
 			},
 		},
 	}
