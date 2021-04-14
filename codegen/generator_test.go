@@ -36,7 +36,7 @@ func TestGen(t *testing.T) {
 		//	options: &Options{
 		//		Source: path.Join(parent, "filter"),
 		//		Type:   "Selection",
-		//		Dest:   path.Join(parent, "filter", "selection_enc.go"),
+		//		Dest:   path.Join(parent, "filter", "selection_enc.go.1"),
 		//	},
 		//},
 		{
