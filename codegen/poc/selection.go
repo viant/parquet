@@ -1,4 +1,4 @@
-package filter
+package poc
 
 type Selection struct {
 	Timestamp           *string          `parquet:"timestamp"`
