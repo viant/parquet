@@ -1,4 +1,4 @@
-package filter
+package poc
 
 type SampledSubject struct {
 	CreativeID *int64    `parquet:"creativeID"`
