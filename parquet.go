@@ -180,9 +180,6 @@ func (m *Metadata) WritePageHeader(w io.Writer, pth []string, dataLen, compresse
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("PH: %+v\b", ph)
-
 	if err := m.updateRowGroup(pth, dataLen, compressedLen, len(buf), count, comp); err != nil {
 		return err
 	}
