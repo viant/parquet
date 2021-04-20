@@ -61,6 +61,8 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 						Name:           parts[len(parts)-1],
 						RepetitionType: &rt,
 						NumChildren:    &z,
+						LogicalType: f.LogicalType,
+						ConvertedType: f.ConvertedType,
 					}
 					out = append(out, par)
 				}
