@@ -61,8 +61,8 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 						Name:           parts[len(parts)-1],
 						RepetitionType: &rt,
 						NumChildren:    &z,
-						LogicalType: f.LogicalType,
-						ConvertedType: f.ConvertedType,
+						LogicalType:    f.LogicalType,
+						ConvertedType:  f.ConvertedType,
 					}
 					out = append(out, par)
 				}
@@ -81,6 +81,8 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 			Scale:      &z,
 			Precision:  &z,
 			FieldID:    &z,
+			LogicalType: f.LogicalType,
+			ConvertedType: f.ConvertedType,
 		}
 
 		f.Type(se)
@@ -252,7 +254,7 @@ func (m *Metadata) Footer(w io.Writer) error {
 		fmd.RowGroups = append(fmd.RowGroups, &rg)
 	}
 
-	for i, f :=  range fmd.Schema {
+	for i, f := range fmd.Schema {
 		fmt.Printf("[%]: converted:%v, logical: %v\n", i, f.ConvertedType, f.LogicalType)
 	}
 	buf, err := m.ts.Write(context.TODO(), fmd)
