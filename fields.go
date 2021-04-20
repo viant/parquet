@@ -418,4 +418,5 @@ func LogicalType(logicalType *sch.LogicalType) func(f *RequiredField) {
 	return func(f *RequiredField) {
 		f.logicalType = logicalType
 	}
+
 }
