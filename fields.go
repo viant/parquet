@@ -392,14 +392,14 @@ func encodeGzip(b []byte) []byte {
 	return out.Bytes()
 }
 
-func ConvertedTypeOptional(convertedType *sch.ConvertedType) func(f *OptionalField) {
+func OptionalConvertedType(convertedType *sch.ConvertedType) func(f *OptionalField) {
 	return func(f *OptionalField) {
 		f.convertedType = convertedType
 	}
 }
 
 
-func LogicalTypeOptional(logicalType *sch.LogicalType) func(f *OptionalField) {
+func OptionalLogicalTypeO(logicalType *sch.LogicalType) func(f *OptionalField) {
 	return func(f *OptionalField) {
 		f.logicalType = logicalType
 	}
