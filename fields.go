@@ -399,7 +399,7 @@ func OptionalConvertedType(convertedType *sch.ConvertedType) func(f *OptionalFie
 }
 
 
-func OptionalLogicalTypeO(logicalType *sch.LogicalType) func(f *OptionalField) {
+func OptionalLogicalType(logicalType *sch.LogicalType) func(f *OptionalField) {
 	return func(f *OptionalField) {
 		f.logicalType = logicalType
 	}
