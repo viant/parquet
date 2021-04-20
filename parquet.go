@@ -254,9 +254,6 @@ func (m *Metadata) Footer(w io.Writer) error {
 		fmd.RowGroups = append(fmd.RowGroups, &rg)
 	}
 
-	for i, f := range fmd.Schema {
-		fmt.Printf("[%]: converted:%v, logical: %v\n", i, f.ConvertedType, f.LogicalType)
-	}
 	buf, err := m.ts.Write(context.TODO(), fmd)
 	if err != nil {
 		return err
