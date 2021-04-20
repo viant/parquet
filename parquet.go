@@ -22,8 +22,9 @@ type Field struct {
 	Types          []int
 	Type           FieldFunc
 	RepetitionType FieldFunc
+	ConvertedType  *sch.ConvertedType
+	LogicalType    *sch.LogicalType
 }
-
 
 // Page keeps track of metadata for each ColumnChunk
 type Page struct {
@@ -99,7 +100,7 @@ type Metadata struct {
 	pageDocs     int64
 	rowGroupDocs int64
 	rowGroups    []RowGroup
-	metadata *sch.FileMetaData
+	metadata     *sch.FileMetaData
 }
 
 // Stats is passed in by each column's call to DoWrite
@@ -311,13 +312,14 @@ func schemaElements(fields []Field) schema {
 	for _, f := range fields {
 		var z int32
 		se := sch.SchemaElement{
-			Name:       f.Name,
-			TypeLength: &z,
-			Scale:      &z,
-			Precision:  &z,
-			FieldID:    &z,
+			Name:          f.Name,
+			TypeLength:    &z,
+			Scale:         &z,
+			Precision:     &z,
+			FieldID:       &z,
+			LogicalType:   f.LogicalType,
+			ConvertedType: f.ConvertedType,
 		}
-
 		f.Type(&se)
 		f.RepetitionType(&se)
 		m[strings.Join(f.Path, ".")] = se

@@ -18,9 +18,19 @@ import (
 
 // RequiredField writes the raw data for required columns
 type RequiredField struct {
-	pth         []string
-	compression sch.CompressionCodec
+	pth           []string
+	compression   sch.CompressionCodec
+	convertedType *sch.ConvertedType
+	logicalType   *sch.LogicalType
 }
+func (f *RequiredField) ConvertedType() *sch.ConvertedType {
+	return f.convertedType
+}
+
+func (f *RequiredField) LogicalType() *sch.LogicalType {
+	return f.logicalType
+}
+
 
 // NewRequiredField creates a required field.
 func NewRequiredField(pth []string, opts ...func(*RequiredField)) RequiredField {
@@ -114,6 +124,8 @@ type OptionalField struct {
 	compression    sch.CompressionCodec
 	RepetitionType FieldFunc
 	Types          []int
+	convertedType  *sch.ConvertedType
+	logicalType    *sch.LogicalType
 	repeated       bool
 }
 
@@ -146,12 +158,20 @@ func NewOptionalField(pth []string, types []int, opts ...func(*OptionalField)) O
 	return f
 }
 
+func (f *OptionalField) ConvertedType() *sch.ConvertedType {
+	return f.convertedType
+}
+
+func (f *OptionalField) LogicalType() *sch.LogicalType {
+	return f.logicalType
+}
+
+
 // OptionalFieldSnappy sets the compression for a column to snappy
 // It is an optional arg to NewOptionalField
 func OptionalFieldSnappy(r *OptionalField) {
 	r.compression = sch.CompressionCodec_SNAPPY
 }
-
 
 // OptionalFieldSnappy sets the compression for a column to snappy
 // It is an optional arg to NewOptionalField
@@ -228,7 +248,6 @@ func (f *OptionalField) DoRead(r io.ReadSeeker, pg Page) (io.Reader, []int, erro
 		if err != nil {
 			return nil, nil, err
 		}
-
 
 		l := 0
 		if f.repeated {
@@ -329,7 +348,7 @@ func compress(codec sch.CompressionCodec, vals []byte) (int, int, []byte) {
 		cl = len(vals)
 	case sch.CompressionCodec_GZIP:
 		l = len(vals)
-		vals = encodeGzip( vals)
+		vals = encodeGzip(vals)
 		cl = len(vals)
 
 	case sch.CompressionCodec_UNCOMPRESSED:
@@ -371,4 +390,32 @@ func encodeGzip(b []byte) []byte {
 		}
 	}
 	return out.Bytes()
+}
+
+func ConvertedTypeOptional(convertedType *sch.ConvertedType) func(f *OptionalField) {
+	return func(f *OptionalField) {
+		f.convertedType = convertedType
+	}
+}
+
+
+func LogicalTypeOptional(logicalType *sch.LogicalType) func(f *OptionalField) {
+	return func(f *OptionalField) {
+		f.logicalType = logicalType
+	}
+}
+
+
+
+func ConvertedType(convertedType *sch.ConvertedType) func(f *RequiredField) {
+	return func(f *RequiredField) {
+		f.convertedType = convertedType
+	}
+}
+
+
+func LogicalType(logicalType *sch.LogicalType) func(f *RequiredField) {
+	return func(f *RequiredField) {
+		f.logicalType = logicalType
+	}
 }

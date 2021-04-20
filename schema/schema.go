@@ -238,7 +238,7 @@ func ConvertedTypeFromString(s string) (ConvertedType, error) {
 	case "INTERVAL":
 		return ConvertedType_INTERVAL, nil
 	}
-	return ConvertedType(0), fmt.Errorf("not a valid ConvertedType string")
+	return ConvertedType(0), fmt.Errorf("not a valid convertedType string")
 }
 
 func ConvertedTypePtr(v ConvertedType) *ConvertedType { return &v }
@@ -3093,7 +3093,7 @@ func (p *LogicalType) Write(oprot thrift.TProtocol) error {
 	if c := p.CountSetFieldsLogicalType(); c != 1 {
 		return fmt.Errorf("%T write union: exactly one field must be set (%d set).", p, c)
 	}
-	if err := oprot.WriteStructBegin("LogicalType"); err != nil {
+	if err := oprot.WriteStructBegin("logicalType"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
 	if p != nil {
@@ -3345,7 +3345,7 @@ func (p *LogicalType) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("LogicalType(%+v)", *p)
+	return fmt.Sprintf("logicalType(%+v)", *p)
 }
 
 // Represents a element inside a schema definition.
