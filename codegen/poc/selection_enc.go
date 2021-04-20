@@ -3,7 +3,9 @@
 package poc
 
 import (
+	"encoding/base64"
 	"github.com/francoispqt/gojay"
+	"github.com/viant/toolbox"
 )
 
 type SampledSubjects []SampledSubject
@@ -122,6 +124,11 @@ func (s *SampledSubject) UnmarshalJSONObject(dec *gojay.Decoder, k string) error
 		var value string
 		err := dec.String(&value)
 		if err == nil {
+			decoded, err := base64.StdEncoding.DecodeString(value)
+			if err != nil {
+				return err
+			}
+			value = string(decoded)
 			s.Filter = &value
 		}
 		return err
@@ -151,7 +158,7 @@ func (s *SampledSubject) NKeys() int { return 6 }
 
 // MarshalJSONObject implements MarshalerJSONObject
 func (s *Selection) MarshalJSONObject(enc *gojay.Encoder) {
-	enc.StringKeyOmitEmpty("timestamp", *s.Timestamp)
+	//	enc.StringKeyOmitEmpty("timestamp", *s.Timestamp)
 	enc.StringKeyOmitEmpty("sid", *s.SID)
 	enc.StringKeyOmitEmpty("auctionId", *s.AuctionID)
 	enc.StringKeyOmitEmpty("hostNodeIp", *s.HostNodeIP)
@@ -190,7 +197,12 @@ func (s *Selection) UnmarshalJSONObject(dec *gojay.Decoder, k string) error {
 		var value string
 		err := dec.String(&value)
 		if err == nil {
-			s.Timestamp = &value
+			ts, err := toolbox.ToTime(value, "2006-01-02 15:04:05.999")
+			if err != nil {
+				return err
+			}
+			tsValue := int64(ts.UnixNano() / 1000000)
+			s.Timestamp = &tsValue
 		}
 		return err
 

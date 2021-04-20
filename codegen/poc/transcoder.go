@@ -22,7 +22,7 @@ func Transcode(ctx context.Context, location string, dest string) error{
 	if err != nil {
 		fmt.Errorf("error creating a file %v", err)
 	}
-	fw, err := NewParquetWriter(f, MaxPageSize(1000), Gzip)
+	fw, err := NewParquetWriter(f, MaxPageSize(10000), Gzip)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,8 +34,9 @@ func Transcode(ctx context.Context, location string, dest string) error{
 		data := aScanner.Bytes()
 		selection := &Selection{}
 		if err = gojay.Unmarshal(data, selection);err != nil {
-			continue
-			//return fmt.Errorf("failed to unmarshall: %w, data: '%s'",err, data)
+				fmt.Printf("failed to unmarshall: %v, data: '%s\n'",err, data)
+				continue
+//			return fmt.Errorf("failed to unmarshall: %w, data: '%s'",err, data)
 		}
 		fw.Add(*selection)
 	}

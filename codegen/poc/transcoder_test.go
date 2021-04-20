@@ -21,8 +21,8 @@ func TestTranscode(t *testing.T) {
 	}{
 		{
 			description: "small  file with snappy codec",
-			location:    path.Join(director, "test_data/selection_3.log"),
-			destination: path.Join(director, "test_data/selection_snappy_3.parquet"),
+			location:    path.Join(director, "test_data/selection.log"),
+			destination: path.Join(director, "test_data/selection_gzip.parquet"),
 		},
 	}
 
