@@ -1,0 +1,8 @@
+func write{{.MethodSuffix}}(v *{{.OwnerType}}, vals []{{.ParquetType}}, defs, reps []uint8) (int, int) {
+	def := defs[0]
+	aVal := {{.CastNativeBegin}}vals[0]{{.CastNativeEnd}}
+	switch def {
+		{{.Code}}
+	}
+	return 0, 1
+}

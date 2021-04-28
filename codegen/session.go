@@ -72,7 +72,11 @@ func (s *session) readPackageCode() error {
 	return err
 }
 
-func (s *session) addAccessorMutatorSnippet(snippet string) {
+func (s *session) addAccessorSnippet(snippet string) {
+	s.accessorMutatorCode = append(s.accessorMutatorCode, snippet)
+}
+
+func (s *session) addMutatorSnippet(snippet string) {
 	s.accessorMutatorCode = append(s.accessorMutatorCode, snippet)
 }
 func (s *session) addFieldStructSnippet(snippet string) {

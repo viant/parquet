@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-	"github.com/viant/parquet/internal/rle"
+	"github.com/viant/parquet/coding/rle"
 	"github.com/stretchr/testify/assert"
 )
 

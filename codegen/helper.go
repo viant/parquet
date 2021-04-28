@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"github.com/viant/toolbox"
 	"reflect"
 	"strings"
 )
@@ -23,18 +24,16 @@ func getTagOptions(tag, key string) []string {
 }
 
 func getRequiredFieldInit(nodes Nodes) string {
-	node := nodes.Leaf()
-	params := node.NewParams()
+	params := nodes.NewParams("")
 	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v}, fieldCompression(compression)),`,
-		params.FieldStructType, node.FieldName, node.FieldName, nodes.PathList(),
+		params.StructType, params.MethodSuffix, params.MethodSuffix, nodes.PathList(),
 	)
 }
 
 func getOptionalFieldInit(nodes Nodes) string {
-	node := nodes.Leaf()
-	params := node.NewParams()
-	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, fieldCompression(compression)),`,
-		params.FieldStructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(),
+	params := nodes.NewParams("")
+	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, optionalFieldCompression(compression)),`,
+		params.StructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(),
 	)
 }
 
@@ -47,4 +46,48 @@ func normalizeTypeName(name string) string {
 		name = strings.Replace(name, seq, "", count)
 	}
 	return name
+}
+
+func allocLeafSnippet(field *toolbox.FieldInfo, append bool) string {
+	init := ""
+	if field.IsSlice && !append {
+		init = "{}"
+	}
+	return fmt.Sprintf("%v{%v}", qualifiedType(field, append), init)
+}
+
+func qualifiedType(field *toolbox.FieldInfo, append bool) string {
+	modifier := ""
+	if append {
+		if field.IsPointer {
+			modifier += "&"
+		}
+	} else {
+		if field.IsSlice {
+			modifier += "[]"
+		}
+		if field.IsPointer {
+			if field.IsSlice {
+				modifier += "*"
+			} else {
+				modifier += "&"
+			}
+		}
+	}
+	typeName := field.TypeName
+	if field.ComponentType != "" {
+		typeName = field.ComponentType
+	}
+	return modifier + normalizeTypeName(typeName)
+}
+
+func allocNodeSnippet(owner, child *toolbox.FieldInfo, init string, append bool) string {
+	ownerType := qualifiedType(owner, append)
+	itemStart := ""
+	itemEnd := ""
+	if !append && owner.IsSlice {
+		itemStart = "{"
+		itemEnd = "}"
+	}
+	return fmt.Sprintf("%v%v{%v: %v}%v", ownerType, itemStart, child.Name, init, itemEnd)
 }

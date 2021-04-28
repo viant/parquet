@@ -1,4 +1,4 @@
-type {{.FieldStructType}} struct {
+type {{.StructType}} struct {
 	parquet.OptionalField
 	vals  []{{.ParquetType}}
 	read  func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint8, []uint8)
@@ -6,8 +6,8 @@ type {{.FieldStructType}} struct {
 	stats *{{.ParquetType}}optionalStats
 }
 
-func New{{.FieldStructType}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint8, []uint8), write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *{{.FieldStructType}} {
-	return &{{.FieldStructType}}{
+func New{{.StructType}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint8, []uint8), write func({{.OwnerAlias}} *{{.OwnerType}}, vals []{{.ParquetType}}, defs, reps []uint8) (int, int), path []string, types []int, opts ...func(*parquet.OptionalField)) *{{.StructType}} {
+	return &{{.StructType}}{
 		read:          read,
 		write:         write,
 		OptionalField: parquet.NewOptionalField(path, types, opts...),
@@ -15,11 +15,11 @@ func New{{.FieldStructType}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, [
 	}
 }
 
-func (f *{{.FieldStructType}}) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: {{.MethodRoot}}Type, RepetitionType: f.RepetitionType, Types: f.Types}
+func (f *{{.StructType}}) Schema() parquet.Field {
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: parquet.{{.ParquetTypeTitle}}Type, RepetitionType: f.RepetitionType, Types: f.Types, ConvertedType: f.ConvertedType(), LogicalType: f.LogicalType()}
 }
 
-func (f *{{.FieldStructType}}) Write(w io.Writer, meta *parquet.Metadata) error {
+func (f *{{.StructType}}) Write(w io.Writer, meta *parquet.Metadata) error {
 	var buf bytes.Buffer
 	for _, v := range f.vals {
 		if err := binary.Write(&buf, binary.LittleEndian, v); err != nil {
@@ -29,19 +29,19 @@ func (f *{{.FieldStructType}}) Write(w io.Writer, meta *parquet.Metadata) error 
 	return f.DoWrite(w, meta, buf.Bytes(), len(f.Defs), f.stats)
 }
 
-func (f *{{.FieldStructType}}) Read(r io.ReadSeeker, pg parquet.Page) error {
+func (f *{{.StructType}}) Read(r io.ReadSeeker, pg parquet.Page) error {
 	rr, _, err := f.DoRead(r, pg)
 	if err != nil {
 		return err
 	}
 
-	v := make({{.ParquetType}}, f.Values()-len(f.vals))
+	v := make([]{{.ParquetType}}, f.Values()-len(f.vals))
 	err = binary.Read(rr, binary.LittleEndian, &v)
 	f.vals = append(f.vals, v...)
 	return err
 }
 
-func (f *{{.FieldStructType}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
+func (f *{{.StructType}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
 	vals, defs, reps := f.read({{.OwnerAlias}})
 	f.stats.add(vals, defs)
 	f.vals = append(f.vals, vals...)
@@ -49,7 +49,7 @@ func (f *{{.FieldStructType}}) Add({{.OwnerAlias}} *{{.OwnerType}}) {
 	f.Reps = append(f.Reps, reps...)
 }
 
-func (f *{{.FieldStructType}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
+func (f *{{.StructType}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
 	if len(f.Defs) == 0 {
 		return
 	}
@@ -62,70 +62,6 @@ func (f *{{.FieldStructType}}) Scan({{.OwnerAlias}} *{{.OwnerType}}) {
 	}
 }
 
-func (f *{{.FieldStructType}}) Levels() ([]uint8, []uint8) {
+func (f *{{.StructType}}) Levels() ([]uint8, []uint8) {
 	return f.Defs, f.Reps
-}
-
-
-type {{.ParquetType}}optionalStats struct {
-	min     {{.ParquetType}}
-	max     {{.ParquetType}}
-	nils    int64
-	nonNils int64
-	maxDef  uint8
-}
-
-func new{{.ParquetType}}optionalStats(d uint8) *{{.ParquetType}}optionalStats {
-	return &{{.ParquetType}}optionalStats{
-		min:    {{.ParquetType}}(math.Max{{.MethodRoot}}),
-		maxDef: d,
-	}
-}
-
-func (f *{{.ParquetType}}optionalStats) add(vals []{{.ParquetType}}, defs []uint8) {
-	var i int
-	for _, def := range defs {
-		if def < f.maxDef {
-			f.nils++
-		} else {
-			val := vals[i]
-			i++
-
-			f.nonNils++
-			if val < f.min {
-				f.min = val
-			}
-			if val > f.max {
-				f.max = val
-			}
-		}
-	}
-}
-
-func (f *{{.ParquetType}}optionalStats) bytes(val {{.ParquetType}}) []byte {
-	var buf bytes.Buffer
-	binary.Write(&buf, binary.LittleEndian, val)
-	return buf.Bytes()
-}
-
-func (f *{{.ParquetType}}optionalStats) NullCount() *int64 {
-	return &f.nils
-}
-
-func (f *{{.ParquetType}}optionalStats) DistinctCount() *int64 {
-	return nil
-}
-
-func (f *{{.ParquetType}}optionalStats) Min() []byte {
-	if f.nonNils == 0 {
-		return nil
-	}
-	return f.bytes(f.min)
-}
-
-func (f *{{.ParquetType}}optionalStats) Max() []byte {
-	if f.nonNils == 0 {
-		return nil
-	}
-	return f.bytes(f.max)
 }

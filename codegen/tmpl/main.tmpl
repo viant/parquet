@@ -363,16 +363,6 @@ func (p *ParquetReader) Scan(x *{{.OwnerType}}) {
 	}
 }
 
-
-func pint32(i int32) *int32       { return &i }
-func puint32(i uint32) *uint32    { return &i }
-func pint64(i int64) *int64       { return &i }
-func puint64(i uint64) *uint64    { return &i }
-func pbool(b bool) *bool          { return &b }
-func pstring(s string) *string    { return &s }
-func pfloat32(f float32) *float32 { return &f }
-func pfloat64(f float64) *float64 { return &f }
-
 // keeps track of the indices of repeated fields
 // that have already been handled by a previous field
 type indices []int
@@ -395,48 +385,4 @@ func maxDef(types []int) uint8 {
 		}
 	}
 	return out
-}
-
-func Int32Type(se *sch.SchemaElement) {
-	t := sch.Type_INT32
-	se.Type = &t
-}
-
-func Uint32Type(se *sch.SchemaElement) {
-	t := sch.Type_INT32
-	se.Type = &t
-	ct := sch.ConvertedType_UINT_32
-	se.ConvertedType = &ct
-}
-
-func Int64Type(se *sch.SchemaElement) {
-	t := sch.Type_INT64
-	se.Type = &t
-}
-
-func Uint64Type(se *sch.SchemaElement) {
-	t := sch.Type_INT64
-	se.Type = &t
-	ct := sch.ConvertedType_UINT_64
-	se.ConvertedType = &ct
-}
-
-func Float32Type(se *sch.SchemaElement) {
-	t := sch.Type_FLOAT
-	se.Type = &t
-}
-
-func Float64Type(se *sch.SchemaElement) {
-	t := sch.Type_DOUBLE
-	se.Type = &t
-}
-
-func BoolType(se *sch.SchemaElement) {
-	t := sch.Type_BOOLEAN
-	se.Type = &t
-}
-
-func StringType(se *sch.SchemaElement) {
-	t := sch.Type_BYTE_ARRAY
-	se.Type = &t
 }

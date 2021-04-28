@@ -1,0 +1,11 @@
+if len({{.Var}}.{{.Field}}) == 0 {
+     defs = append(defs, {{.Def}})
+     reps = append(reps, lastRep)
+ } else {
+     for i{{.Rep}}, x{{.Rep}} := range {{.Var}}.{{.Field}} {
+         if i{{.Rep}} == 1 {
+            lastRep = {{.Rep}}
+        }
+        %s
+     }
+ }

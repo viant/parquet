@@ -1,11 +1,10 @@
-package fields
+package parquet
 
 // RepetitionType is an enum of the possible
 // parquet repetition types
 type RepetitionType int
 
 const (
-	Unseen   RepetitionType = -1
 	Required RepetitionType = 0
 	Optional RepetitionType = 1
 	Repeated RepetitionType = 2
@@ -14,22 +13,6 @@ const (
 // RepetitionTypes provides several functions used by parquetgen's
 // go templates to generate code.
 type RepetitionTypes []RepetitionType
-
-// Def returns the repetition type for the definition level
-func (r RepetitionTypes) Def(def int) RepetitionType {
-	var out RepetitionType
-	var count int
-	for _, rt := range r {
-		if rt == Optional || rt == Repeated {
-			count++
-		}
-		if count == def {
-			out = rt
-		}
-	}
-
-	return out
-}
 
 // MaxDef returns the largest definition level
 func (r RepetitionTypes) MaxDef() uint8 {
@@ -83,43 +66,3 @@ func (r RepetitionTypes) Required() bool {
 	return true
 }
 
-// NRepeated figures out if the sub-field at position i
-// is repeated.
-func (r RepetitionTypes) NRepeated(i int) bool {
-	var count int
-	for _, rt := range r {
-		if rt == Repeated {
-			count++
-		}
-
-		if count == i {
-			return true
-		}
-	}
-	return false
-}
-
-func reverse(in []field) []field {
-	flds := append(in[:0:0], in...)
-	for i := len(flds)/2 - 1; i >= 0; i-- {
-		opp := len(flds) - 1 - i
-		flds[i], flds[opp] = flds[opp], flds[i]
-	}
-	return flds
-}
-
-type rts []RepetitionType
-
-func (r rts) add(i int, rts []RepetitionType) rts {
-	if len(r) < i+1 {
-		r = append(r, make([]RepetitionType, len(r)-i+1)...)
-	}
-
-	for _, rt := range rts {
-		if rt > r[i] {
-			r[i] = rt
-		}
-	}
-
-	return r
-}

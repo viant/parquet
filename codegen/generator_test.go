@@ -22,29 +22,13 @@ func TestGen(t *testing.T) {
 		hasError    bool
 	}{
 
-		//{
-		//	description: "primitive  types",
-		//	options: &Options{
-		//		Source: path.Join(parent, "primitives"),
-		//		Type:   "Message",
-		//		Dest:   path.Join(parent, "primitives", "message_enc.go"),
-		//	},
-		//},
-		//
-		//{
-		//	description: "filter  types",
-		//	options: &Options{
-		//		Source: path.Join(parent, "filter"),
-		//		Type:   "Selection",
-		//		Dest:   path.Join(parent, "filter", "selection_enc.go.1"),
-		//	},
-		//},
 		{
-			description: "nested  types",
+			description: "primitive  types",
 			options: &Options{
-				Source: path.Join(parent, "nested"),
+				Source: path.Join(parent, "primitives"),
 				Type:   "Message",
-				Dest:   path.Join(parent, "nested", "message_enc.go"),
+				Dest:   path.Join(parent, "primitives", "message_enc.go"),
+				OmitEmpty: true,
 			},
 		},
 	}

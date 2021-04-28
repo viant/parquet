@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"github.com/viant/parquet/internal/bitpack"
+	"github.com/viant/parquet/coding/bitpack"
 )
 
 const (

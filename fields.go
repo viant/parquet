@@ -11,10 +11,12 @@ import (
 	"io"
 
 	"github.com/golang/snappy"
-	"github.com/viant/parquet/internal/fields"
-	"github.com/viant/parquet/internal/rle"
+	"github.com/viant/parquet/coding/rle"
 	sch "github.com/viant/parquet/schema"
 )
+
+
+
 
 // RequiredField writes the raw data for required columns
 type RequiredField struct {
@@ -129,12 +131,12 @@ type OptionalField struct {
 	repeated       bool
 }
 
-func getRepetitionTypes(in []int) fields.RepetitionTypes {
-	out := make([]fields.RepetitionType, len(in))
+func getRepetitionTypes(in []int) RepetitionTypes {
+	out := make([]RepetitionType, len(in))
 	for i, x := range in {
-		out[i] = fields.RepetitionType(x)
+		out[i] = RepetitionType(x)
 	}
-	return fields.RepetitionTypes(out)
+	return RepetitionTypes(out)
 }
 
 // NewOptionalField creates an optional field
@@ -392,6 +394,7 @@ func encodeGzip(b []byte) []byte {
 	return out.Bytes()
 }
 
+
 func OptionalConvertedType(convertedType *sch.ConvertedType) func(f *OptionalField) {
 	return func(f *OptionalField) {
 		f.convertedType = convertedType
@@ -420,3 +423,6 @@ func LogicalType(logicalType *sch.LogicalType) func(f *RequiredField) {
 	}
 
 }
+
+
+var fieldFuncs = []FieldFunc{RepetitionRequired, RepetitionOptional, RepetitionRepeated}

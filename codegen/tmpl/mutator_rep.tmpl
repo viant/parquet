@@ -1,0 +1,19 @@
+func write{{.MethodSuffix}}(v *{{.OwnerType}}, vals []{{.ParquetType}}, defs, reps []uint8) (int, int) {
+	var nVals, nLevels int
+	ind := make(indices, {{.MaxRep}})
+	for i := range defs {
+		def := defs[i]
+		rep := reps[i]
+		if i > 0 && rep == 0 {
+			break
+		}
+		nLevels++
+		ind.rep(rep)
+		aVal := {{.CastNativeBegin}}vals[nVals]{{.CastNativeEnd}}
+		switch def {
+			{{.Code}}
+			nVals++
+		}
+	}
+	return nVals, nLevels
+}
