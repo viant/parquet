@@ -2,7 +2,6 @@ package parquet
 
 import (
 	"bytes"
-	"compress/gzip"
 	"math/bits"
 	"strings"
 
@@ -323,12 +322,13 @@ func pageData(r io.Reader, ph *sch.PageHeader, pg Page) ([]byte, error) {
 		if _, err := r.Read(compressed); err != nil {
 			return nil, err
 		}
-
 		var err error
 		data, err = snappy.Decode(nil, compressed)
 		if err != nil {
 			return nil, err
 		}
+	case sch.CompressionCodec_GZIP:
+		return decodeGzip(r)
 	case sch.CompressionCodec_UNCOMPRESSED:
 		data = make([]byte, ph.UncompressedPageSize)
 		if _, err := r.Read(data); err != nil {
@@ -382,17 +382,7 @@ func readLevels(in io.Reader, width int32) ([]uint8, int, error) {
 	return out, n, nil
 }
 
-func encodeGzip(b []byte) []byte {
-	out := new(bytes.Buffer)
-	writer := gzip.NewWriter(out)
-	_, err := writer.Write(b)
-	if err == nil {
-		if err = writer.Flush(); err == nil {
-			err = writer.Close()
-		}
-	}
-	return out.Bytes()
-}
+
 
 
 func OptionalConvertedType(convertedType *sch.ConvertedType) func(f *OptionalField) {
@@ -423,6 +413,8 @@ func LogicalType(logicalType *sch.LogicalType) func(f *RequiredField) {
 	}
 
 }
+
+
 
 
 var fieldFuncs = []FieldFunc{RepetitionRequired, RepetitionOptional, RepetitionRepeated}

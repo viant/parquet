@@ -1,6 +1,8 @@
 package parquet
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 	"io/ioutil"
 )
@@ -58,3 +60,25 @@ func unpackBools(data byte) [8]bool {
 	}
 }
 
+
+
+func decodeGzip(r io.Reader) ([]byte, error) {
+	reader, err := gzip.NewReader(r)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return ioutil.ReadAll(reader)
+}
+
+func encodeGzip(b []byte) []byte {
+	out := new(bytes.Buffer)
+	writer := gzip.NewWriter(out)
+	_, err := writer.Write(b)
+	if err == nil {
+		if err = writer.Flush(); err == nil {
+			err = writer.Close()
+		}
+	}
+	return out.Bytes()
+}
