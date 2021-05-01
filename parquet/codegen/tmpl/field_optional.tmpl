@@ -16,7 +16,7 @@ func New{{.StructType}}(read func(r *{{.OwnerType}}) ([]{{.ParquetType}}, []uint
 }
 
 func (f *{{.StructType}}) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: parquet.{{.ParquetTypeTitle}}Type, RepetitionType: f.RepetitionType, Types: f.Types, ConvertedType: f.ConvertedType(), LogicalType: f.LogicalType()}
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Options: append(f.Options(), parquet.{{.ParquetTypeTitle}}Type, f.RepetitionType), Types: f.Types}
 }
 
 func (f *{{.StructType}}) Write(w io.Writer, meta *parquet.Metadata) error {

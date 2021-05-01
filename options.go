@@ -7,9 +7,8 @@ import (
 	sch "github.com/viant/parquet/schema"
 )
 
-
-// FieldFunc is used to set some of the metadata for each column
-type FieldFunc func(*sch.SchemaElement)
+// SchemeOption is used to set some of the metadata for each column
+type SchemeOption func(*sch.SchemaElement)
 
 // RepetitionRequired sets the repetition type to required
 func RepetitionRequired(se *sch.SchemaElement) {
@@ -72,4 +71,37 @@ func BoolType(se *sch.SchemaElement) {
 func StringType(se *sch.SchemaElement) {
 	t := sch.Type_BYTE_ARRAY
 	se.Type = &t
+}
+
+
+func LogicalTypeString(se *sch.SchemaElement) {
+	 se.LogicalType = &sch.LogicalType{
+		STRING: &sch.StringType{},
+	}
+}
+
+func LogicalTypeTimestampMillis(se *sch.SchemaElement) {
+	se.LogicalType = &sch.LogicalType{
+		TIMESTAMP: &sch.TimestampType{
+			IsAdjustedToUTC: true,
+			Unit:            &sch.TimeUnit{
+				MILLIS: &sch.MilliSeconds{},
+			},
+		},
+	}
+}
+
+func ConvertedTypeTimestampMillis(se *sch.SchemaElement) {
+	t := sch.ConvertedType_TIMESTAMP_MILLIS
+	se.ConvertedType = &t
+}
+
+func ConvertedTypeUTF8(se *sch.SchemaElement) {
+	t := sch.ConvertedType_UTF8
+	se.ConvertedType = &t
+}
+
+func ConvertedTypeInt64(se *sch.SchemaElement) {
+	t := sch.ConvertedType_INT_64
+	se.ConvertedType = &t
 }

@@ -23,17 +23,24 @@ func TestGen(t *testing.T) {
 	}{
 
 		{
-			description: "primitive  types",
+			description: "required/optional",
 			options: &Options{
-				Source: path.Join(parent, "primitives"),
+				Source: path.Join(parent, "base"),
 				Type:   "Message",
-				Dest:   path.Join(parent, "primitives", "message_enc.go"),
-				OmitEmpty: true,
+				Dest:   path.Join(parent, "base", "message_enc.go"),
+			},
+		},
+		{
+			description: "repeated",
+			options: &Options{
+				Source: path.Join(parent, "repeated"),
+				Type:   "Message",
+				Dest:   path.Join(parent, "repeated", "message_enc.go"),
 			},
 		},
 	}
 
-	for _, useCase := range useCases[0:1] {
+	for _, useCase := range useCases {
 		fs.Delete(context.Background(), useCase.options.Dest)
 		err := Generate(useCase.options)
 		if ! assert.Nil(t, err, useCase.hasError) {

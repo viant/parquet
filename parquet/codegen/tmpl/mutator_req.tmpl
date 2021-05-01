@@ -1,3 +1,3 @@
 func write{{.MethodSuffix}}(x *{{.OwnerType}}, vals []{{.ParquetType}}) {
-	x.{{.FieldName}} = {{.FieldType}}(vals[0])
+	x.{{.FieldName}} = {{.CastNativeBegin}}vals[0]{{.CastNativeEnd}}
 }

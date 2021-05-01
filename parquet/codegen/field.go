@@ -2,7 +2,6 @@ package codegen
 
 import _ "embed"
 
-
 //go:embed tmpl/field_required.tmpl
 var fieldRequiredStructTmpl Template
 
@@ -33,10 +32,9 @@ func generateRequiredFieldStruct(sess *session, nodes Nodes) error {
 		sess.addFieldStructSnippet(code)
 		return nil
 	}
-
 	sess.addImport("bytes")
 	sess.addImport("encoding/binary")
-	if normalizeTypeName(nodes.Leaf().Field.TypeName) == "string" {
+	if lookupParquetType(nodes.Leaf().Field.TypeName) == "string" {
 		sess.addImport("sort")
 		code, err := fieldRequiredStringStructTmpl.Expand("fieldRequiredStringStruct", params)
 		if err != nil {
@@ -66,9 +64,10 @@ func generateOptionalFieldStruct(sess *session, nodes Nodes) error {
 		sess.addFieldStructSnippet(code)
 		return nil
 	}
+
 	sess.addImport("bytes")
 	sess.addImport("encoding/binary")
-	if normalizeTypeName(nodes.Leaf().Field.TypeName) == "string" {
+	if normalizeTypeName(nodes.Leaf().Field.TypeName) == "string" || nodes.Leaf().Field.TypeName == "[]byte" {
 		sess.addImport("sort")
 		code, err := fieldOptionalStringStructTmpl.Expand("fieldOptionalStringStructTmpl", params)
 		if err != nil {

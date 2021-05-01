@@ -31,8 +31,6 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 						Name:           parts[len(parts)-1],
 						RepetitionType: &rt,
 						NumChildren:    &z,
-						LogicalType:    f.LogicalType,
-						ConvertedType:  f.ConvertedType,
 					}
 					out = append(out, par)
 				}
@@ -51,12 +49,10 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 			Scale:      &z,
 			Precision:  &z,
 			FieldID:    &z,
-			LogicalType: f.LogicalType,
-			ConvertedType: f.ConvertedType,
 		}
-
-		f.Type(se)
-		f.RepetitionType(se)
+		for _, opt := range f.Options {
+			opt(se)
+		}
 		out = append(out, se)
 	}
 
@@ -75,11 +71,10 @@ func schemaElements(fields []Field) schema {
 			Scale:         &z,
 			Precision:     &z,
 			FieldID:       &z,
-			LogicalType:   f.LogicalType,
-			ConvertedType: f.ConvertedType,
 		}
-		f.Type(&se)
-		f.RepetitionType(&se)
+		for _, opt := range f.Options {
+			opt(&se)
+		}
 		m[strings.Join(f.Path, ".")] = se
 	}
 	return schema{lookup: m, fields: fields}

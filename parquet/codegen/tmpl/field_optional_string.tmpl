@@ -17,7 +17,7 @@ func NewStringOptionalField(read func(r *{{.OwnerType}}) ([]string, []uint8, []u
 }
 
 func (f *StringOptionalField) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: parquet.StringType, RepetitionType: f.RepetitionType, Types: f.Types, ConvertedType: f.ConvertedType(), LogicalType: f.LogicalType()}
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Options: append(f.Options(), parquet.StringType, f.RepetitionType), Types: f.Types}
 }
 
 func (f *StringOptionalField) Add(r *{{.OwnerType}}) {

@@ -21,16 +21,13 @@ import (
 type RequiredField struct {
 	pth           []string
 	compression   sch.CompressionCodec
-	convertedType *sch.ConvertedType
-	logicalType   *sch.LogicalType
-}
-func (f *RequiredField) ConvertedType() *sch.ConvertedType {
-	return f.convertedType
+	options        []SchemeOption
 }
 
-func (f *RequiredField) LogicalType() *sch.LogicalType {
-	return f.logicalType
+func (f *RequiredField) Options() []SchemeOption {
+	return f.options
 }
+
 
 
 // NewRequiredField creates a required field.
@@ -123,11 +120,14 @@ type OptionalField struct {
 	pth            []string
 	MaxLevels      MaxLevel
 	compression    sch.CompressionCodec
-	RepetitionType FieldFunc
+	RepetitionType SchemeOption
 	Types          []int
-	convertedType  *sch.ConvertedType
-	logicalType    *sch.LogicalType
+	options        []SchemeOption
 	repeated       bool
+}
+
+func (f *OptionalField) Options() []SchemeOption {
+	return f.options
 }
 
 func getRepetitionTypes(in []int) RepetitionTypes {
@@ -159,13 +159,7 @@ func NewOptionalField(pth []string, types []int, opts ...func(*OptionalField)) O
 	return f
 }
 
-func (f *OptionalField) ConvertedType() *sch.ConvertedType {
-	return f.convertedType
-}
 
-func (f *OptionalField) LogicalType() *sch.LogicalType {
-	return f.logicalType
-}
 
 
 // OptionalFieldSnappy sets the compression for a column to snappy
@@ -382,39 +376,17 @@ func readLevels(in io.Reader, width int32) ([]uint8, int, error) {
 	return out, n, nil
 }
 
-
-
-
-func OptionalConvertedType(convertedType *sch.ConvertedType) func(f *OptionalField) {
+func OptionalSchemaOption(opts ...SchemeOption) func(f *OptionalField) {
 	return func(f *OptionalField) {
-		f.convertedType = convertedType
+		f.options = opts
 	}
 }
 
-
-func OptionalLogicalType(logicalType *sch.LogicalType) func(f *OptionalField) {
-	return func(f *OptionalField) {
-		f.logicalType = logicalType
-	}
-}
-
-
-
-func ConvertedType(convertedType *sch.ConvertedType) func(f *RequiredField) {
+func SchemaOption(opts ...SchemeOption) func(f *RequiredField) {
 	return func(f *RequiredField) {
-		f.convertedType = convertedType
+		f.options = opts
 	}
 }
 
 
-func LogicalType(logicalType *sch.LogicalType) func(f *RequiredField) {
-	return func(f *RequiredField) {
-		f.logicalType = logicalType
-	}
-
-}
-
-
-
-
-var fieldFuncs = []FieldFunc{RepetitionRequired, RepetitionOptional, RepetitionRepeated}
+var fieldFuncs = []SchemeOption{RepetitionRequired, RepetitionOptional, RepetitionRepeated}

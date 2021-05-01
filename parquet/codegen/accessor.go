@@ -42,9 +42,15 @@ func generateOptionalAccessor(sess *session, nodes Nodes) error {
 	for def := 0; def < maxDef; def++ {
 		node := nodes.DefNilNode(def)
 		checkValue := node.CheckValue()
-		out += fmt.Sprintf(`case %s == %s:
+		checkBegin := ""
+		checkEnd := ""
+		if node.Field.TypeName == "[]byte" {
+			checkBegin = "len("
+			checkEnd = ")"
+		}
+		out += fmt.Sprintf(`case %s%s%s%s:
 		return nil, []uint8{%d}, nil
-`, node.Path(), checkValue, def)
+`, checkBegin, node.Path(), checkEnd, checkValue, def)
 
 	}
 	leaf := nodes.Leaf()

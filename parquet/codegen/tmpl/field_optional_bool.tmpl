@@ -16,7 +16,7 @@ func NewBoolOptionalField(read func(r *{{.OwnerType}}) ([]bool, []uint8, []uint8
 }
 
 func (f *BoolOptionalField) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: parquet.BoolType, RepetitionType: f.RepetitionType, Types: f.Types, ConvertedType: f.ConvertedType(), LogicalType: f.LogicalType()}
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Options: append(f.Options(), parquet.BoolType, f.RepetitionType), Types: f.Types}
 }
 
 func (f *BoolOptionalField) Read(r io.ReadSeeker, pg parquet.Page) error {

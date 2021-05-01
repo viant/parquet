@@ -61,7 +61,6 @@ func unpackBools(data byte) [8]bool {
 }
 
 
-
 func decodeGzip(r io.Reader) ([]byte, error) {
 	reader, err := gzip.NewReader(r)
 	if err != nil {

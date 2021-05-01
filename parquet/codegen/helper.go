@@ -11,7 +11,7 @@ const (
 	PARQUET_KEY = "parquet"
 )
 
-func getTagOptions(tag, key string) []string {
+func getTagOptions(tag, key string) map[string]string {
 	if tag == "" {
 		return nil
 	}
@@ -20,20 +20,30 @@ func getTagOptions(tag, key string) []string {
 	if !ok {
 		return nil
 	}
-	return strings.Split(options, ",")
+	var result = make(map[string]string)
+	for _, item := range strings.Split(options, ",") {
+		pair := strings.Split(item, "=")
+		switch len(pair) {
+		case 1:
+			result["name"] = strings.TrimSpace(pair[0])
+		default:
+			result[strings.TrimSpace(pair[0])] = strings.TrimSpace(pair[1])
+		}
+	}
+	return result
 }
 
 func getRequiredFieldInit(nodes Nodes) string {
 	params := nodes.NewParams("")
-	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v}, fieldCompression(compression)),`,
-		params.StructType, params.MethodSuffix, params.MethodSuffix, nodes.PathList(),
+	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v}, fieldCompression(compression), parquet.SchemaOption(%v)),`,
+		params.StructType, params.MethodSuffix, params.MethodSuffix, nodes.PathList(), nodes.SchemaOptions(),
 	)
 }
 
 func getOptionalFieldInit(nodes Nodes) string {
 	params := nodes.NewParams("")
-	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, optionalFieldCompression(compression)),`,
-		params.StructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(),
+	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, optionalFieldCompression(compression), parquet.OptionalSchemaOption(%v)),`,
+		params.StructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(), nodes.SchemaOptions(),
 	)
 }
 

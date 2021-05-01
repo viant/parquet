@@ -16,7 +16,7 @@ func New{{.StructType}}(read func({{.OwnerAlias}} *{{.OwnerType}}) {{.ParquetTyp
 }
 
 func (f *{{.StructType}}) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: parquet.{{.ParquetTypeTitle}}Type, RepetitionType: parquet.RepetitionRequired, Types: []int{0}, ConvertedType: f.ConvertedType(), LogicalType: f.LogicalType()}
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Options: append(f.Options(), parquet.{{.ParquetTypeTitle}}Type, parquet.RepetitionRequired), Types: []int{0}}
 }
 
 func (f *{{.StructType}}) Read(r io.ReadSeeker, pg parquet.Page) error {

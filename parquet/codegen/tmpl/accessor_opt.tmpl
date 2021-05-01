@@ -1,4 +1,4 @@
-if {{.Var}}.{{.Field}} == {{.CheckValue}} {
+if {{.Var}}.{{.Field}}{{.CheckValue}} {
     defs = append(defs, {{.Def}})
     reps = append(reps, lastRep)
 } else {

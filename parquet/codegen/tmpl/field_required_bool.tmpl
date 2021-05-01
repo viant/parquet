@@ -15,7 +15,7 @@ func NewBoolField(read func(r *{{.OwnerType}}) bool, write func(r *{{.OwnerType}
 }
 
 func (f *BoolField) Schema() parquet.Field {
-	return parquet.Field{Name: f.Name(), Path: f.Path(), Type: parquet.BoolType, RepetitionType: parquet.RepetitionRequired, Types: []int{0}, ConvertedType: f.ConvertedType(), LogicalType: f.LogicalType()}
+	return parquet.Field{Name: f.Name(), Path: f.Path(), Options: append(f.Options(), parquet.BoolType, parquet.RepetitionRequired), Types: []int{0}}
 }
 
 func (f *BoolField) Write(w io.Writer, meta *parquet.Metadata) error {

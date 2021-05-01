@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-
 //go:embed tmpl/main.tmpl
 var mainTmpl Template
 
@@ -62,7 +61,6 @@ func addRequiredImports(session *session) {
 	session.addImport("strings")
 	session.addImport("fmt")
 	session.addImport("github.com/viant/parquet")
-	session.addImport("sch github.com/viant/parquet/schema")
 }
 
 func generatePathCode(sess *session, nodes Nodes, typeName string) error {
@@ -72,6 +70,10 @@ func generatePathCode(sess *session, nodes Nodes, typeName string) error {
 	}
 	fields := typeInfo.Fields()
 	for i, field := range fields {
+		normalizedType := normalizeTypeName(field.TypeName)
+		if idx := strings.LastIndex(normalizedType, ".");idx !=-1 {
+			sess.addImport(normalizedType[:idx])
+		}
 		node := NewNode(sess, typeName, fields[i])
 		fieldNodes := append(nodes, node)
 		if isBaseType(field.TypeName) {
@@ -101,7 +103,6 @@ func generateFieldCode(sess *session, nodes Nodes) error {
 	params := nodes.NewParams("")
 
 	if !sess.shallGenerateParquetFieldType(params.StructType) {
-		fmt.Printf("already gen: %v\n", params.StructType)
 		return nil
 	}
 	if nodes.MaxDef() == 0 {
@@ -127,7 +128,7 @@ func generateFieldInits(sess *session, path Nodes) {
 func isBaseType(typeName string) bool {
 	switch typeName {
 	case "bool", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "[]string",
-		"[]int", "[]int32", "[]int64", "[]float64", "[]float32":
+		"[]uint", "[]int", "[]int32", "[]int64","[]uint32", "[]uint64", "[]float64", "[]float32","[]byte", "[]bool", "time.Time", "*time.Time":
 		return true
 	}
 	return false

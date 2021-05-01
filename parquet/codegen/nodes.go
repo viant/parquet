@@ -26,7 +26,7 @@ func (n Nodes) OwnerType() string {
 func (n Nodes) MaxRep() int {
 	maxRep := 0
 	for _, item := range n {
-		if item.Field.IsSlice {
+		if item.IsRepeated() {
 			maxRep++
 		}
 	}
@@ -83,7 +83,7 @@ func (n Nodes) DefPos(def int) int {
 func (n Nodes) RepPos(rep int) int {
 	k := -1
 	for i, item := range n {
-		if item.Field.IsSlice {
+		if item.IsRepeated() {
 			k++
 			if k == rep {
 				return i
@@ -106,7 +106,7 @@ func (n Nodes) DefCasePathPos(def int) int {
 			}
 			nDef++
 		}
-		if node.Field.IsSlice {
+		if node.IsRepeated() {
 			nRep++
 			slicePos = append(slicePos, i)
 		}
@@ -142,7 +142,7 @@ func (n Nodes) nodePath(pos int, result *[]string) {
 	for i := 0; i <= pos; i++ {
 		node := n[i]
 
-		if node.Field.IsSlice {
+		if node.IsRepeated() {
 			if rep > 0 {
 				(*result)[slicePos] += fmt.Sprintf("[ind[%v]]", rep-1)
 			}
@@ -203,7 +203,7 @@ func (n Nodes) DefCaseValue(def int) string {
 				append := def == 1
 				result = allocLeafSnippet(node.Field, append)
 			} else {
-				append := node.Field.IsSlice && i == pos
+				append := node.IsRepeated() && i == pos
 				result = allocNodeSnippet(node.Field, n[i+1].Field, result, append)
 			}
 		}
@@ -251,12 +251,12 @@ func (n Nodes) RepCaseValue(rep int) string {
 	if isRootLevel {
 		pos = 0
 	}
-	if leafNode.Field.IsSlice && (pos != leafNode.Pos || isRootLevel) {
+	if leafNode.IsRepeated() && (pos != leafNode.Pos || isRootLevel) {
 		result = fmt.Sprintf("[]%v{%v}", leafNode.Field.ComponentType, result)
 	}
 	for i := len(n) - 2; i >= pos; i-- {
 		node := n[i]
-		append := !node.Field.IsSlice
+		append := !node.IsRepeated()
 		if i == pos {
 			append = rootAppend
 		}
@@ -272,7 +272,7 @@ func (n Nodes) Leaf() *Node {
 func (n Nodes) RepetitionTypes() []int {
 	var result = make([]int, len(n))
 	for i, item := range n {
-		if item.Field.IsSlice {
+		if item.IsRepeated() {
 			result[i] = int(parquet.Repeated)
 			continue
 		}
@@ -284,15 +284,14 @@ func (n Nodes) RepetitionTypes() []int {
 	return result
 }
 
-func (n *Nodes) Init(omitEmpty bool) {
+func (n *Nodes) Init(omitEmpty bool)  {
 	rep := 0
 	def := 0
 	for i, item := range *n {
-
 		if omitEmpty {
 			(*n)[i].optional = true
 		}
-		if item.Field.IsSlice {
+		if item.IsRepeated() {
 			rep++
 			(*n)[i].Rep = rep
 		}
@@ -340,7 +339,7 @@ func (n Nodes) AccessorOwnerPath(endNodePos int) string {
 	elements = append(elements, "v")
 	for i := 1; i <= endNodePos; i++ {
 		node := n[i-1]
-		if node.Field.IsSlice {
+		if node.IsRepeated() {
 			elements = []string{}
 			//			elements = append(elements, fmt.Sprintf("v%v", node.Pos))
 			continue
@@ -352,7 +351,7 @@ func (n Nodes) AccessorOwnerPath(endNodePos int) string {
 
 func (n Nodes) typeModifier(nod *Node) string {
 	if nod.Field.IsPointer {
-		if nod.Field.IsSlice {
+		if nod.IsRepeated() {
 			return "*"
 		} else {
 			return "&"
@@ -361,13 +360,17 @@ func (n Nodes) typeModifier(nod *Node) string {
 	return ""
 }
 
+func (n Nodes) SchemaOptions() string {
+	return n.Leaf().schemaOptions
+}
+
 func (n Nodes) NewParams(code string) *NodeParams {
 	leaf := n.Leaf()
 	return &NodeParams{
 		OwnerType:        n[0].OwnerType,
 		FieldName:        leaf.Field.Name,
 		FieldType:        leaf.Field.TypeName,
-		ParquetType:      lookupParquetType(normalizeTypeName(leaf.Field.TypeName)),
+		ParquetType:      lookupParquetType(leaf.Field.TypeName),
 		MethodSuffix:     n.MethodSuffix(),
 		Code:             code,
 		MaxRep:           n.MaxRep(),
@@ -378,7 +381,7 @@ func (n Nodes) NewParams(code string) *NodeParams {
 		StructType:       leaf.StructType(),
 		OwnerPath:        leaf.OwnerPath,
 		OwnerAlias:       strings.ToLower(n[0].OwnerType[0:1]),
-		ParquetTypeTitle: strings.Title(lookupParquetType(normalizeTypeName(leaf.Field.TypeName))),
+		ParquetTypeTitle: strings.Title(lookupParquetType(leaf.Field.TypeName)),
 	}
 }
 
