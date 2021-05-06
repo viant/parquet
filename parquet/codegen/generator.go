@@ -34,7 +34,7 @@ func Generate(options *Options) error {
 		FieldInit     string
 		OwnerType     string
 	}{
-		Pkg:           session.pkg,
+		Pkg:           session.Pkg,
 		Imports:       session.getImports(),
 		AccessorCode:  strings.Join(session.accessorMutatorCode, "\n"),
 		FieldTypeCode: strings.Join(session.fieldStructCode, "\n"),

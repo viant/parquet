@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-//session stores generated codes, imports, pkg
+//session stores generated codes, imports, Pkg
 type session struct {
 	*Options
 	*toolbox.FileSetInfo
-	pkg                  string
+	Pkg                  string
 	generatedTypes       map[string]bool
 	generatedParquetType map[string]bool
 	imports              map[string]bool
@@ -39,7 +39,7 @@ func (s *session) shallGenerateParquetFieldType(typeName string) bool {
 	return true
 }
 
-//readPackageCode creates pkg code
+//readPackageCode creates Pkg code
 func (s *session) readPackageCode() error {
 	p, err := filepath.Abs(s.Source)
 	if err != nil {
@@ -66,7 +66,7 @@ func (s *session) readPackageCode() error {
 
 	// if Pkg flag is set use it
 	if s.Pkg != "" {
-		s.pkg = s.Pkg
+		s.Pkg = s.Pkg
 	}
 
 	return err
