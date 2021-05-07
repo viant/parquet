@@ -29,6 +29,8 @@ func (n *Node) CheckValue() string {
 			checkValue = ` == false`
 		case "time.Time":
 			checkValue = `.IsZero()`
+		case "time.StringTime":
+			checkValue = `== ""`
 
 		default:
 			checkValue = " == 0"
