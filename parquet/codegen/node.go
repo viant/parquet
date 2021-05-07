@@ -167,7 +167,7 @@ func (n *Node) setOptions() {
 	convertedType := tagItems[tagConvertedType]
 	normalizedType := normalizeTypeName(n.Field.TypeName)
 
-	if convertedType == strings.ToUpper(convertedType) {
+	if convertedType == strings.ToUpper(convertedType)  && convertedType != "UTF8" {
 		convertedType = toolbox.ToCaseFormat(convertedType, toolbox.CaseUpperUnderscore, toolbox.CaseUpperCamel)
 	}
 
