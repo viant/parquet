@@ -41,6 +41,7 @@ func getRequiredFieldInit(nodes Nodes) string {
 }
 
 func getOptionalFieldInit(nodes Nodes) string {
+
 	params := nodes.NewParams("")
 	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, optionalFieldCompression(compression), parquet.OptionalSchemaOption(%v)),`,
 		params.StructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(), nodes.SchemaOptions(),
@@ -69,12 +70,16 @@ func allocLeafSnippet(field *toolbox.FieldInfo, append bool) string {
 func qualifiedType(field *toolbox.FieldInfo, append bool) string {
 	modifier := ""
 	if append {
-		if field.IsPointer {
+		if field.IsPointer || field.IsPointerComponent {
 			modifier += "&"
 		}
 	} else {
 		if field.IsSlice {
 			modifier += "[]"
+		}
+
+		if field.IsPointerComponent {
+			modifier += "*"
 		}
 		if field.IsPointer {
 			if field.IsSlice {

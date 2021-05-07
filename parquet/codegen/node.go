@@ -38,9 +38,9 @@ func (n *Node) CheckValue() string {
 	return checkValue
 }
 
-func (n *Node) StructType() string {
+func (n *Node) StructType(maxDef int) string {
 	structType := strings.Title(n.ParquetType())
-	if n.IsOptional() {
+	if maxDef > 0 {
 		structType += "Optional"
 	}
 	return structType + "Field"
@@ -53,7 +53,6 @@ func (n *Node) IsOptional() bool {
 func (n *Node) IsRepeated() bool {
 	return n.Field.IsSlice && n.Field.TypeName != "[]byte"
 }
-
 
 func (n *Node) Path() string {
 	if n.OwnerPath == "" {
@@ -79,8 +78,8 @@ func (n *Node) CastParquetBegin() string {
 	simpleType := n.SimpleType()
 	mapped, ok := parquetTypeMapping[simpleType]
 	if ok {
-		if strings.HasSuffix(n.Field.TypeName,"time.Time") {
-			return   "("
+		if strings.HasSuffix(n.Field.TypeName, "time.Time") {
+			return "("
 		}
 		return mapped + "("
 	}
@@ -91,8 +90,8 @@ func (n *Node) CastParquetEnd() string {
 	simpleType := n.SimpleType()
 	_, ok := parquetTypeMapping[simpleType]
 	if ok {
-		if strings.HasSuffix(n.Field.TypeName,"time.Time") {
-			return fmt.Sprintf(").UnixNano()/1000000", )
+		if strings.HasSuffix(n.Field.TypeName, "time.Time") {
+			return fmt.Sprintf(").UnixNano()/1000000")
 		}
 		return ")"
 	}
@@ -104,7 +103,7 @@ func (n *Node) CastNativeBegin() string {
 	if _, ok := parquetTypeMapping[simpleType]; !ok {
 		return ""
 	}
-	if strings.HasSuffix(n.Field.TypeName ,"time.Time") {
+	if strings.HasSuffix(n.Field.TypeName, "time.Time") {
 		return "time.Unix(0, "
 	}
 	return simpleType + "("
@@ -122,7 +121,7 @@ func (n *Node) CastNativeEnd() string {
 }
 
 func (n *Node) SimpleType() string {
-	if n.Field.ComponentType != "" && n.Field.TypeName != "[]byte"{
+	if n.Field.ComponentType != "" && n.Field.TypeName != "[]byte" {
 		return n.Field.ComponentType
 	}
 	return n.Field.TypeName

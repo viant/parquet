@@ -38,6 +38,15 @@ func TestGen(t *testing.T) {
 				Dest:   path.Join(parent, "repeated", "message_enc.go"),
 			},
 		},
+
+		{
+			description: "optional",
+			options: &Options{
+				Source: path.Join(parent, "optional"),
+				Type:   "Message",
+				Dest:   path.Join(parent, "optional", "message_enc.go"),
+			},
+		},
 	}
 
 	for _, useCase := range useCases {

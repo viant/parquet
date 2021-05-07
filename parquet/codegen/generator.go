@@ -99,15 +99,14 @@ func generateFieldCode(sess *session, nodes Nodes) error {
 		return err
 	}
 	generateFieldInits(sess, nodes)
-
 	params := nodes.NewParams("")
 
 	if !sess.shallGenerateParquetFieldType(params.StructType) {
 		return nil
 	}
+
 	if nodes.MaxDef() == 0 {
 		return generateRequiredFieldStruct(sess, nodes)
-
 	}
 	return generateOptionalFieldStruct(sess, nodes)
 }
@@ -115,8 +114,7 @@ func generateFieldCode(sess *session, nodes Nodes) error {
 
 func generateFieldInits(sess *session, path Nodes) {
 	var code string
-	node := path.Leaf()
-	if node.IsOptional() {
+	if path.MaxDef() > 0 {
 		code = getOptionalFieldInit(path)
 	} else {
 		code = getRequiredFieldInit(path)

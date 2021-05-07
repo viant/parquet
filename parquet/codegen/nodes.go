@@ -251,9 +251,13 @@ func (n Nodes) RepCaseValue(rep int) string {
 	if isRootLevel {
 		pos = 0
 	}
+
+
 	if leafNode.IsRepeated() && (pos != leafNode.Pos || isRootLevel) {
 		result = fmt.Sprintf("[]%v{%v}", leafNode.Field.ComponentType, result)
 	}
+
+
 	for i := len(n) - 2; i >= pos; i-- {
 		node := n[i]
 		append := !node.IsRepeated()
@@ -360,6 +364,8 @@ func (n Nodes) typeModifier(nod *Node) string {
 	return ""
 }
 
+
+
 func (n Nodes) SchemaOptions() string {
 	return n.Leaf().schemaOptions
 }
@@ -378,7 +384,7 @@ func (n Nodes) NewParams(code string) *NodeParams {
 		CastNativeEnd:    leaf.CastNativeEnd(),
 		CastParquetEnd:   leaf.CastParquetEnd(),
 		CastParquetBegin: leaf.CastParquetBegin(),
-		StructType:       leaf.StructType(),
+		StructType:       leaf.StructType(n.MaxDef()),
 		OwnerPath:        leaf.OwnerPath,
 		OwnerAlias:       strings.ToLower(n[0].OwnerType[0:1]),
 		ParquetTypeTitle: strings.Title(lookupParquetType(leaf.Field.TypeName)),

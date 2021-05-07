@@ -107,9 +107,11 @@ func generateRepeatedSnippet(nodes Nodes, def int, varName string) (string, erro
 		if node.Field.IsPointer {
 			varName = fmt.Sprintf("*%s", varName)
 		}
+
 		if !node.Field.IsSlice {
-			varName = strings.Join(append([]string{varName}, nodes.Names()[node.Pos+1:]...), ".")
+			varName = strings.Join(append([]string{varName}, nodes.Names()[node.Pos:]...), ".")
 		}
+
 		return fmt.Sprintf(`defs = append(defs, %d)
 	reps = append(reps, lastRep)
 	vals = append(vals, %s%s%s)`, def, node.CastParquetBegin(), varName, node.CastParquetEnd()), nil

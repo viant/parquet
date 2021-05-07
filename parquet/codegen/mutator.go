@@ -33,9 +33,17 @@ func generateRepeatedMutator(sess *session, nodes Nodes) error {
 	for def := 1; def < nodes.MaxDef(); def++ {
 		path := nodes.DefCasePath(def)
 		value := nodes.DefCaseValue(def)
-		cases = append(cases, fmt.Sprintf(`case %v:
+		node := nodes[nodes.DefPos(def)]
+		if node.IsRepeated() {
+			cases = append(cases, fmt.Sprintf(`case %v:
 %v = append(%v, %v)
 `, def, path, path, value))
+		} else {
+			cases = append(cases, fmt.Sprintf(`case %v:
+%v =  %v
+`, def, path, value))
+
+		}
 	}
 
 	var repCases = make([]string, 0)
