@@ -75,6 +75,9 @@ func generatePathCode(sess *session, nodes Nodes, typeName string) error {
 			sess.addImport(normalizedType[:idx])
 		}
 		node := NewNode(sess, typeName, fields[i])
+		if strings.Contains(node.Field.TypeName, "Time") {
+			sess.addImport("time")
+		}
 		fieldNodes := append(nodes, node)
 		if isBaseType(field.TypeName) {
 			fieldNodes.Init(sess.OmitEmpty)
@@ -126,7 +129,7 @@ func generateFieldInits(sess *session, path Nodes) {
 func isBaseType(typeName string) bool {
 	switch typeName {
 	case "bool", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "[]string",
-		"[]uint", "[]int", "[]int32", "[]int64","[]uint32", "[]uint64", "[]float64", "[]float32","[]byte", "[]bool", "time.Time", "*time.Time":
+		"[]uint", "[]int", "[]int32", "[]int64","[]uint32", "[]uint64", "[]float64", "[]float32","[]byte", "[]bool", "time.Time", "*time.Time","time.StringTime":
 		return true
 	}
 	return false

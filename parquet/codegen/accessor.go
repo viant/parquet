@@ -109,6 +109,12 @@ func generateRepeatedSnippet(nodes Nodes, def int, varName string) (string, erro
 		}
 
 		if !node.Field.IsSlice {
+			for i:=node.Pos;i>=0;i-- {
+				if nodes[i].IsRepeated() {
+					node = nodes[i+1]
+					break
+				}
+			}
 			varName = strings.Join(append([]string{varName}, nodes.Names()[node.Pos:]...), ".")
 		}
 
@@ -135,6 +141,7 @@ func generateRepeatedSnippet(nodes Nodes, def int, varName string) (string, erro
 	var err error
 	if node.Field.IsSlice {
 		nextVar = fmt.Sprintf("x%d", node.Rep)
+
 		fragment, err = accessorRepeatedNode.Expand("repeatedNode", param)
 		if err != nil {
 			return "", err

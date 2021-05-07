@@ -9,7 +9,11 @@ func write{{.MethodSuffix}}(v *{{.OwnerType}}, vals []{{.ParquetType}}, defs, re
 		}
 		nLevels++
 		ind.rep(rep)
-		aVal := {{.CastNativeBegin}}vals[nVals]{{.CastNativeEnd}}
+		var aVal {{.NativeType}}
+        if nVals < len(vals)  {
+    	    aVal = {{.CastNativeBegin}}vals[nVals]{{.CastNativeEnd}}
+    	}
+
 		switch def {
 			{{.Code}}
 			nVals++

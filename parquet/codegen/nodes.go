@@ -252,11 +252,9 @@ func (n Nodes) RepCaseValue(rep int) string {
 		pos = 0
 	}
 
-
 	if leafNode.IsRepeated() && (pos != leafNode.Pos || isRootLevel) {
 		result = fmt.Sprintf("[]%v{%v}", leafNode.Field.ComponentType, result)
 	}
-
 
 	for i := len(n) - 2; i >= pos; i-- {
 		node := n[i]
@@ -288,7 +286,7 @@ func (n Nodes) RepetitionTypes() []int {
 	return result
 }
 
-func (n *Nodes) Init(omitEmpty bool)  {
+func (n *Nodes) Init(omitEmpty bool) {
 	rep := 0
 	def := 0
 	for i, item := range *n {
@@ -364,24 +362,34 @@ func (n Nodes) typeModifier(nod *Node) string {
 	return ""
 }
 
-
-
 func (n Nodes) SchemaOptions() string {
 	return n.Leaf().schemaOptions
 }
 
 func (n Nodes) NewParams(code string) *NodeParams {
 	leaf := n.Leaf()
+
+	nativeType := leaf.Field.TypeName
+	if nativeType != "[]byte" {
+		nativeType = normalizeTypeName(nativeType)
+	}
+	if nativeType == "time.StringTime" {
+		nativeType = "string"
+	}
+	if leaf.Field.ComponentType != "" && leaf.Field.TypeName != "[]byte"{
+		nativeType = leaf.Field.ComponentType
+	}
 	return &NodeParams{
-		OwnerType:        n[0].OwnerType,
-		FieldName:        leaf.Field.Name,
-		FieldType:        leaf.Field.TypeName,
-		ParquetType:      lookupParquetType(leaf.Field.TypeName),
-		MethodSuffix:     n.MethodSuffix(),
-		Code:             code,
-		MaxRep:           n.MaxRep(),
-		CastNativeBegin:  leaf.CastNativeBegin(),
-		CastNativeEnd:    leaf.CastNativeEnd(),
+		OwnerType:       n[0].OwnerType,
+		FieldName:       leaf.Field.Name,
+		FieldType:       leaf.Field.TypeName,
+		ParquetType:     lookupParquetType(leaf.Field.TypeName),
+		MethodSuffix:    n.MethodSuffix(),
+		Code:            code,
+		MaxRep:          n.MaxRep(),
+		CastNativeBegin: leaf.CastNativeBegin(),
+		CastNativeEnd:   leaf.CastNativeEnd(),
+		NativeType: nativeType,
 		CastParquetEnd:   leaf.CastParquetEnd(),
 		CastParquetBegin: leaf.CastParquetBegin(),
 		StructType:       leaf.StructType(n.MaxDef()),
@@ -403,6 +411,7 @@ type NodeParams struct {
 	Code             string
 	CastNativeBegin  string
 	CastNativeEnd    string
+	NativeType       string
 	CastParquetBegin string
 	CastParquetEnd   string
 	StructType       string

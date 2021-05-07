@@ -25,6 +25,7 @@ func TestGen(t *testing.T) {
 		{
 			description: "required/optional",
 			options: &Options{
+				OmitEmpty: true,
 				Source: path.Join(parent, "base"),
 				Type:   "Message",
 				Dest:   path.Join(parent, "base", "message_enc.go"),

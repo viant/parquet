@@ -80,6 +80,8 @@ func (n *Node) CastParquetBegin() string {
 	if ok {
 		if strings.HasSuffix(n.Field.TypeName, "time.Time") {
 			return "("
+		} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
+			return "parquet.StringToTime("
 		}
 		return mapped + "("
 	}
@@ -91,6 +93,8 @@ func (n *Node) CastParquetEnd() string {
 	_, ok := parquetTypeMapping[simpleType]
 	if ok {
 		if strings.HasSuffix(n.Field.TypeName, "time.Time") {
+			return fmt.Sprintf(").UnixNano()/1000000")
+		} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 			return fmt.Sprintf(").UnixNano()/1000000")
 		}
 		return ")"
@@ -105,6 +109,8 @@ func (n *Node) CastNativeBegin() string {
 	}
 	if strings.HasSuffix(n.Field.TypeName, "time.Time") {
 		return "time.Unix(0, "
+	}  else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
+		return "parquet.TimeToString(time.Unix(0, "
 	}
 	return simpleType + "("
 }
@@ -116,6 +122,8 @@ func (n *Node) CastNativeEnd() string {
 	}
 	if strings.HasSuffix(n.Field.TypeName, "time.Time") {
 		return ")"
+	} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
+		return "))"
 	}
 	return ")"
 }
@@ -138,11 +146,12 @@ func NewNode(sess *session, ownerType string, field *toolbox.FieldInfo) *Node {
 		FieldName: field.Name,
 	}
 	tagItems := getTagOptions(field.Tag, PARQUET_KEY)
-	if tagItems != nil {
-		node.FieldName = tagItems["name"]
+	if tagItems != nil  {
+		if _, ok := tagItems["name"]; ok {
+			node.FieldName = tagItems["name"]
+		}
 	}
 	node.setOptions()
-
 	return node
 }
 
@@ -157,6 +166,16 @@ func (n *Node) setOptions() {
 	var options = make([]string, 0)
 	convertedType := tagItems[tagConvertedType]
 	normalizedType := normalizeTypeName(n.Field.TypeName)
+
+	if convertedType == strings.ToUpper(convertedType) {
+		convertedType = toolbox.ToCaseFormat(convertedType, toolbox.CaseUpperUnderscore, toolbox.CaseUpperCamel)
+	}
+
+	if convertedType == "TimestampMillis"  && n.Field.TypeName == "string" {
+		n.Field.TypeName = "time.StringTime"
+	}
+
+
 	if convertedType == "" {
 		switch normalizedType {
 		case "string":

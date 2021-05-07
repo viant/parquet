@@ -3,8 +3,12 @@ package parquet
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
+	"github.com/viant/toolbox"
 	"io"
 	"io/ioutil"
+	"strings"
+	"time"
 )
 
 // GetBools reads a byte array and turns each bit into a bool
@@ -60,7 +64,6 @@ func unpackBools(data byte) [8]bool {
 	}
 }
 
-
 func decodeGzip(r io.Reader) ([]byte, error) {
 	reader, err := gzip.NewReader(r)
 	if err != nil {
@@ -80,4 +83,23 @@ func encodeGzip(b []byte) []byte {
 		}
 	}
 	return out.Bytes()
+}
+
+func TimeToString(time time.Time) string {
+	return time.Format("2006-01-02 15:04:05.000-07")
+}
+
+func StringToTime(ts string) *time.Time {
+	layout := "2006-01-02 15:04:05.000"
+	if strings.Contains(ts, "T") {
+		layout = time.RFC3339Nano
+	} else {
+		layout = "2006-01-02 15:04:05.000-07"
+	}
+	t, err := toolbox.ToTime(ts, layout)
+	if err != nil {
+		fmt.Println("failed to convert time: %s %v\n", ts, err)
+		return nil
+	}
+	return t
 }

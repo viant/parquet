@@ -11,6 +11,7 @@ const (
 	PARQUET_KEY = "parquet"
 )
 
+
 func getTagOptions(tag, key string) map[string]string {
 	if tag == "" {
 		return nil
@@ -41,11 +42,9 @@ func getRequiredFieldInit(nodes Nodes) string {
 }
 
 func getOptionalFieldInit(nodes Nodes) string {
-
 	params := nodes.NewParams("")
 	return fmt.Sprintf(`New%v(read%v, write%v,[]string{%v},[]int{%v}, optionalFieldCompression(compression), parquet.OptionalSchemaOption(%v)),`,
-		params.StructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(), nodes.SchemaOptions(),
-	)
+		params.StructType, nodes.MethodSuffix(), nodes.MethodSuffix(), nodes.PathList(), nodes.RepetitionTypesList(), nodes.SchemaOptions())
 }
 
 func normalizeTypeName(name string) string {
