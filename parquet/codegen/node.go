@@ -83,7 +83,7 @@ func (n *Node) CastParquetBegin() string {
 			return "("
 		} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 			return "parquet.StringToTime("
-		}  else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
+		} else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
 			return "parquet.StringToDate("
 		}
 		return mapped + "("
@@ -114,7 +114,7 @@ func (n *Node) CastNativeBegin() string {
 	}
 	if strings.HasSuffix(n.Field.TypeName, "time.Time") {
 		return "time.Unix(0, "
-	}  else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
+	} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 		return "parquet.TimeToString(time.Unix(0, "
 	} else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
 		return "parquet.DateToString("
@@ -155,7 +155,7 @@ func NewNode(sess *session, ownerType string, field *toolbox.FieldInfo) *Node {
 		FieldName: field.Name,
 	}
 	tagItems := getTagOptions(field.Tag, PARQUET_KEY)
-	if tagItems != nil  {
+	if tagItems != nil {
 		if _, ok := tagItems["name"]; ok {
 			node.FieldName = tagItems["name"]
 		}
@@ -176,14 +176,14 @@ func (n *Node) setOptions() {
 	convertedType := tagItems[tagConvertedType]
 	normalizedType := normalizeTypeName(n.Field.TypeName)
 
-	if convertedType == strings.ToUpper(convertedType)  && convertedType != "UTF8" {
+	if convertedType == strings.ToUpper(convertedType) && convertedType != "UTF8" {
 		convertedType = toolbox.ToCaseFormat(convertedType, toolbox.CaseUpperUnderscore, toolbox.CaseUpperCamel)
 	}
 
-	if convertedType == "TimestampMillis"  && n.Field.TypeName == "string" {
+	if convertedType == "TimestampMillis" && n.Field.TypeName == "string" {
 		n.Field.TypeName = "time.StringTime"
 	}
-	if convertedType == "Date"  && n.Field.TypeName == "string" {
+	if convertedType == "Date" && n.Field.TypeName == "string" {
 		n.Field.TypeName = "time.StringDate"
 	}
 
@@ -201,8 +201,7 @@ func (n *Node) setOptions() {
 	}
 	logicalType := tagItems[tagLogicalType]
 
-
-	if logicalType == strings.ToUpper(logicalType)  {
+	if logicalType == strings.ToUpper(logicalType) {
 		logicalType = toolbox.ToCaseFormat(logicalType, toolbox.CaseUpperUnderscore, toolbox.CaseUpperCamel)
 	}
 
@@ -212,6 +211,8 @@ func (n *Node) setOptions() {
 			logicalType = "String"
 		case "time.Time":
 			logicalType = "TimestampMillis"
+		case "time.StringDate":
+			logicalType = "Date"
 		}
 	}
 	if logicalType != "" {
