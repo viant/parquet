@@ -96,9 +96,16 @@ func ConvertedTypeTimestampMillis(se *sch.SchemaElement) {
 	se.ConvertedType = &t
 }
 
+
+
 func ConvertedTypeUTF8(se *sch.SchemaElement) {
 	t := sch.ConvertedType_UTF8
 	se.ConvertedType = &t
+}
+
+
+func ConvertedTypeEmpty(se *sch.SchemaElement) {
+	se.ConvertedType = nil
 }
 
 func ConvertedTypeDate(se *sch.SchemaElement) {
