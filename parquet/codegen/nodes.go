@@ -373,7 +373,7 @@ func (n Nodes) NewParams(code string) *NodeParams {
 	if nativeType != "[]byte" {
 		nativeType = normalizeTypeName(nativeType)
 	}
-	if nativeType == "time.StringTime" {
+	if nativeType == "time.StringTime" || nativeType == "time.StringDate" {
 		nativeType = "string"
 	}
 	if leaf.Field.ComponentType != "" && leaf.Field.TypeName != "[]byte"{

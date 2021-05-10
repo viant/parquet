@@ -27,5 +27,7 @@ type Message struct {
 	R *R
 	B *B
 	Ts *string `parquet:"type=INT64,convertedType=TIMESTAMP_MILLIS"`
+	Date string `parquet:"type=INT32,convertedType=DATE,logicalType=DATE"`
+
 }
 

@@ -29,9 +29,8 @@ func (n *Node) CheckValue() string {
 			checkValue = ` == false`
 		case "time.Time":
 			checkValue = `.IsZero()`
-		case "time.StringTime":
+		case "time.StringTime", "time.StringDate":
 			checkValue = `== ""`
-
 		default:
 			checkValue = " == 0"
 
@@ -84,6 +83,8 @@ func (n *Node) CastParquetBegin() string {
 			return "("
 		} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 			return "parquet.StringToTime("
+		}  else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
+			return "parquet.StringToDate("
 		}
 		return mapped + "("
 	}
@@ -98,6 +99,8 @@ func (n *Node) CastParquetEnd() string {
 			return fmt.Sprintf(").UnixNano()/1000000")
 		} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 			return fmt.Sprintf(").UnixNano()/1000000")
+		} else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
+			return fmt.Sprintf(")")
 		}
 		return ")"
 	}
@@ -113,6 +116,8 @@ func (n *Node) CastNativeBegin() string {
 		return "time.Unix(0, "
 	}  else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 		return "parquet.TimeToString(time.Unix(0, "
+	} else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
+		return "parquet.DateToString("
 	}
 	return simpleType + "("
 }
@@ -126,6 +131,8 @@ func (n *Node) CastNativeEnd() string {
 		return ")"
 	} else if strings.HasSuffix(n.Field.TypeName, "time.StringTime") {
 		return "))"
+	} else if strings.HasSuffix(n.Field.TypeName, "time.StringDate") {
+		return ")"
 	}
 	return ")"
 }
@@ -176,7 +183,9 @@ func (n *Node) setOptions() {
 	if convertedType == "TimestampMillis"  && n.Field.TypeName == "string" {
 		n.Field.TypeName = "time.StringTime"
 	}
-
+	if convertedType == "Date"  && n.Field.TypeName == "string" {
+		n.Field.TypeName = "time.StringDate"
+	}
 
 	if convertedType == "" {
 		switch normalizedType {
@@ -191,6 +200,12 @@ func (n *Node) setOptions() {
 		options = append(options, fmt.Sprintf(`parquet.ConvertedType%v`, convertedType))
 	}
 	logicalType := tagItems[tagLogicalType]
+
+
+	if logicalType == strings.ToUpper(logicalType)  {
+		logicalType = toolbox.ToCaseFormat(logicalType, toolbox.CaseUpperUnderscore, toolbox.CaseUpperCamel)
+	}
+
 	if logicalType == "" {
 		switch normalizedType {
 		case "string":

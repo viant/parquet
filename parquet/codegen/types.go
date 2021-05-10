@@ -14,8 +14,9 @@ var parquetTypeMapping = map[string]string{
 	"[]byte":          "string",
 	"time.Time":       "int64",
 	"time.StringTime": "int64",
-	"StringTime": "int64",
-
+	"StringTime":      "int64",
+	"StringDate":      "int32",
+	"time.StringDate": "int32",
 	"*time.Time":      "int64",
 	"Time":            "int64",
 }

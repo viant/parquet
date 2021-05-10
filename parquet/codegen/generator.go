@@ -13,7 +13,6 @@ import (
 //go:embed tmpl/main.tmpl
 var mainTmpl Template
 
-
 //Generate generates transformed code into  output file
 func Generate(options *Options) error {
 	session := newSession(options)
@@ -71,7 +70,7 @@ func generatePathCode(sess *session, nodes Nodes, typeName string) error {
 	fields := typeInfo.Fields()
 	for i, field := range fields {
 		normalizedType := normalizeTypeName(field.TypeName)
-		if idx := strings.LastIndex(normalizedType, ".");idx !=-1 {
+		if idx := strings.LastIndex(normalizedType, "."); idx != -1 {
 			sess.addImport(normalizedType[:idx])
 		}
 		node := NewNode(sess, typeName, fields[i])
@@ -114,7 +113,6 @@ func generateFieldCode(sess *session, nodes Nodes) error {
 	return generateOptionalFieldStruct(sess, nodes)
 }
 
-
 func generateFieldInits(sess *session, path Nodes) {
 	var code string
 	if path.MaxDef() > 0 {
@@ -129,7 +127,7 @@ func generateFieldInits(sess *session, path Nodes) {
 func isBaseType(typeName string) bool {
 	switch typeName {
 	case "bool", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "[]string",
-		"[]uint", "[]int", "[]int32", "[]int64","[]uint32", "[]uint64", "[]float64", "[]float32","[]byte", "[]bool", "time.Time", "*time.Time","time.StringTime":
+		"[]uint", "[]int", "[]int32", "[]int64", "[]uint32", "[]uint64", "[]float64", "[]float32", "[]byte", "[]bool", "time.Time", "*time.Time", "time.StringTime", "time.StringDate":
 		return true
 	}
 	return false

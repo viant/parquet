@@ -89,6 +89,31 @@ func TimeToString(time time.Time) string {
 	return time.Format("2006-01-02 15:04:05.000-07")
 }
 
+func DateToString(date int32) string {
+	t := time.Unix(int64(date*3600*24), 0)
+	return t.Format("2006-01-02")
+}
+
+
+func StringToDate(ts string) int32 {
+	layout := "2006-01-02"
+	if strings.Contains(ts, "T") {
+		layout = time.RFC3339Nano
+	} else {
+		layout = "2006-01-02 15:04:05.000-07"
+	}
+
+	t, err := toolbox.ToTime(ts, layout)
+	if err != nil {
+		fmt.Println("failed to convert time: %s %v\n", ts, err)
+		return 0
+	}
+	daysInSec := t.Unix()
+	return int32(daysInSec / 3600 / 24)
+}
+
+
+
 func StringToTime(ts string) *time.Time {
 	layout := "2006-01-02 15:04:05.000"
 	if strings.Contains(ts, "T") {

@@ -101,7 +101,14 @@ func ConvertedTypeUTF8(se *sch.SchemaElement) {
 	se.ConvertedType = &t
 }
 
-func ConvertedTypeInt64(se *sch.SchemaElement) {
-	t := sch.ConvertedType_INT_64
+func ConvertedTypeDate(se *sch.SchemaElement) {
+	t := sch.ConvertedType_DATE
 	se.ConvertedType = &t
+}
+
+
+func LogicalTypeDate(se *sch.SchemaElement) {
+	se.LogicalType = &sch.LogicalType{
+		DATE: &sch.DateType{},
+	}
 }
