@@ -183,8 +183,14 @@ func (n *Node) setOptions() {
 	if convertedType == "TimestampMillis" && n.Field.TypeName == "string" {
 		n.Field.TypeName = "time.StringTime"
 	}
+
+	logicalType := tagItems[tagLogicalType]
+
 	if convertedType == "Date" && n.Field.TypeName == "string" {
 		n.Field.TypeName = "time.StringDate"
+		if logicalType == "" {
+			logicalType = "Date"
+		}
 	}
 
 	if convertedType == "" {
@@ -199,7 +205,6 @@ func (n *Node) setOptions() {
 	if convertedType != "" {
 		options = append(options, fmt.Sprintf(`parquet.ConvertedType%v`, convertedType))
 	}
-	logicalType := tagItems[tagLogicalType]
 
 	if logicalType == strings.ToUpper(logicalType) {
 		logicalType = toolbox.ToCaseFormat(logicalType, toolbox.CaseUpperUnderscore, toolbox.CaseUpperCamel)
@@ -211,8 +216,6 @@ func (n *Node) setOptions() {
 			logicalType = "String"
 		case "time.Time":
 			logicalType = "TimestampMillis"
-		case "time.StringDate":
-			logicalType = "Date"
 		}
 	}
 	if logicalType != "" {
