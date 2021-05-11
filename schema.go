@@ -2,7 +2,6 @@ package parquet
 
 import (
 	sch "github.com/viant/parquet/schema"
-	"github.com/viant/toolbox"
 	"strings"
 )
 
