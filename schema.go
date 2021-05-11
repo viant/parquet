@@ -63,18 +63,12 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 
 		se := &sch.SchemaElement{
 			Name:       f.Path[len(f.Path)-1],
-			TypeLength: &z,
-			Scale:      &z,
-			Precision:  &z,
-			FieldID:    &z,
 		}
 		for _, opt := range f.Options {
 			opt(se)
 		}
 		out = append(out, se)
 	}
-
-	toolbox.Dump(s.fields)
 	//out[0].NumChildren = &children
 	return int64(len(s.fields)), out
 }
