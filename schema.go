@@ -2,6 +2,7 @@ package parquet
 
 import (
 	sch "github.com/viant/parquet/schema"
+	"github.com/viant/toolbox"
 	"strings"
 )
 
@@ -73,6 +74,7 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 		out = append(out, se)
 	}
 
+	toolbox.Dump(s.fields)
 	//out[0].NumChildren = &children
 	return int64(len(s.fields)), out
 }
