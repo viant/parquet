@@ -10,6 +10,7 @@ type schema struct {
 	lookup map[string]sch.SchemaElement
 }
 
+
 func (s schema) schema() (int64, []*sch.SchemaElement) {
 	out := make([]*sch.SchemaElement, 0, len(s.fields)+1)
 	out = append(out, &sch.SchemaElement{
@@ -62,6 +63,10 @@ func (s schema) schema() (int64, []*sch.SchemaElement) {
 
 		se := &sch.SchemaElement{
 			Name:       f.Path[len(f.Path)-1],
+			TypeLength: &z,
+			Scale:      &z,
+			Precision:  &z,
+			FieldID:    &z,
 		}
 		for _, opt := range f.Options {
 			opt(se)
