@@ -199,7 +199,7 @@ func (n *Node) setOptions() {
 			convertedType = "UTF8"
 		case "time.Time":
 			convertedType = "TimestampMillis"
-
+			logicalType = "TimestampMillis"
 		}
 	}
 	if convertedType != "" {
